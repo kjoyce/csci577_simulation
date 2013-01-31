@@ -59,4 +59,6 @@ nosetests.xml
 *.out
 *.synctex.gz
 *.pdf
+*.ps
+*.ps.gz
 
