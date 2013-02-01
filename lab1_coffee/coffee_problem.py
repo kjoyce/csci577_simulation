@@ -1,6 +1,8 @@
 from scipy import *
 from numpy import *
 from coffee_data import time,black,cream
+from matplotlib.pyplot import *
+from matplotlib.mlab import find
 
 # Transform the data 
 def transform_data(temp,T0):
@@ -29,5 +31,59 @@ def eulers_method(f,y0,a,b,dx):
         y[i+1] = y[i] + f(x[i],y[i])*dx
     return (x,y)
 
-#USAGE
-# (t,mtblack) = eulers_method((lambda x,y: cooling_law(y,c_black)),82.3,0,46,.1)
+
+# use Euler's method for models
+(t,mtblack) = eulers_method((lambda x,y: cooling_law(y,c_black)),black[0],0,46,.1)
+(t,mtcream) = eulers_method((lambda x,y: cooling_law(y,c_cream)),cream[0],0,46,.1)
+
+figure(1)
+clf()
+plot(t,mtblack,'-b')
+plot(time,black,'.b')
+plot(t,mtcream,':r')
+plot(time,cream,'xr')
+legend(['model fit black','black data','model fit cream','cream data']) 
+title('Model fits')
+xlabel('time (minutes)')
+ylabel('temperature ($C^0$)')
+show()
+
+
+# use Euler's method to answer question
+(t,test_black) = eulers_method((lambda x,y: cooling_law(y,c_black)),90,0,46,.1)
+(t,test_cream) = eulers_method((lambda x,y: cooling_law(y,c_cream)),85,0,46,.1)
+
+last_idx = find(test_black <= 80)[0]
+figure(2)
+clf()
+ax = gca()
+plot(t[0:(last_idx+1)],test_black[0:(last_idx+1)])
+
+last_idxx = find(test_cream <= 75)[0]
+plot(t[0:(last_idxx+1)],test_cream[0:(last_idxx+1)],'r')
+
+ylim((70,95))
+l = Line2D([t[last_idx],t[last_idx]],[0,test_black[last_idx]])
+l.set_linestyle(':') 
+l.set_color('blue')
+ax.add_line(l)
+hl = Line2D([0,t[last_idx]],[test_black[last_idx],test_black[last_idx]]);
+hl.set_linestyle(':')
+hl.set_color('blue')
+ax.add_line(hl)
+
+
+ll = Line2D([t[last_idxx],t[last_idxx]],[0,test_cream[last_idxx]])
+ll.set_linestyle(':') 
+ll.set_color('red')
+ax.add_line(ll)
+hll = Line2D([0,t[last_idxx]],[test_cream[last_idxx],test_cream[last_idxx]]);
+hll.set_linestyle(':')
+hll.set_color('red')
+ax.add_line(hll)
+legend(['black coffee temp.','creamed coffee temp.']) 
+title('Temperature Comparison')
+xlabel('time (minutes)')
+ylabel('temperature ($C^0$)')
+show()
+
