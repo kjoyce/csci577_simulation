@@ -1,0 +1,15 @@
+Python 2.7.3 (default, Aug  1 2012, 05:16:07) 
+Type "copyright", "credits" or "license" for more information.                                                                              
+                                                                                                                                            
+IPython 0.12.1 -- An enhanced Interactive Python.                                                                                           
+?         -> Introduction and overview of IPython's features.                                                                               
+%quickref -> Quick reference.                                                                                                               
+help      -> Python's own help system.                                                                                                      
+object?   -> Details about 'object', use 'object??' for extra details.                                                                      
+ 
+Welcome to pylab, a matplotlib-based Python environment [backend: TkAgg].
+For more information, type 'help(pylab)'.                                                                                                   
+ 
+In [1]: x = ones(10) 
+                                                                                                                                            
+In [2]:  
