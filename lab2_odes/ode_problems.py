@@ -85,3 +85,39 @@ pl.plot(oscilStates)
 pl.plot(OscilAnalytic(1,1,1,0.001,40000))
 
 pl.show()
+
+#####   Energy    ##########
+
+# Total Energy for Falling object
+
+E_fall_total = 9.8*10
+
+# Total Energy for simulation
+
+E_fall_simulation = 9.8*numeric_solution[:,0] + .5*numeric_solution[:,1]**2
+
+# plot of result
+figure(1)
+pl.plot(E_fall_simulation)
+axhline(y=98)
+
+# Percent difference
+E_fall_change = abs(E_fall_total-E_fall_simulation(end))/(E_fall_total)
+
+# Total Energy for spring
+
+E_spring_total = 1/2
+
+# Total Energy for simulation
+
+E_spring_simulation = 1/2*array(oscilStates[:,0])**2 + 1/2*array(oscilStates[:,1])
+
+# plot of result
+figure(2)
+pl.plot(E_spring_simulation)
+axhline(y=1/2)
+
+# percent difference
+
+E_spring_change = abs(E_spring_total-E_spring_simulation(end))/(E_spring_total)
+
