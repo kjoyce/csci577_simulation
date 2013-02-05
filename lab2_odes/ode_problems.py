@@ -2,7 +2,7 @@
 """
 Created on Fri Feb 01 15:49:39 2013
 
-@author: Nathan Sponberg
+@author: Nathan Sponberg, Kevin Joyce
 """
 
 from scipy import *
