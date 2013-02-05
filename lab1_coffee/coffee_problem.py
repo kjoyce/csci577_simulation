@@ -20,7 +20,6 @@ c_cream = 1/dot(time.T,time) * dot(-time.T,tcream)
 def actual_T(t,c,T0):
   return (T0 - 23)*exp(-c*t) + 23
   
-#Adjust parameter for black = .293, and cream = .279
 def cooling_law(temp,c):
     return -c*(temp-23)
 
@@ -31,6 +30,11 @@ def eulers_method(f,y0,a,b,dx):
         y[i+1] = y[i] + f(x[i],y[i])*dx
     return (x,y)
 
+# Evaluate convergence of Euler's Method for black coffee
+(t,mtblack) = eulers_method((lambda x,y: cooling_law(y,c_black)),black[0],0,46,.1)
+mblack = actual_T(t,c_black,black[0])
+err = max(abs(mtblack - mblack))/max(abs(mblack)) 
+print '% error for Euler\'s method: {0:4f}'.format(err)
 
 # use Euler's method for models
 (t,mtblack) = eulers_method((lambda x,y: cooling_law(y,c_black)),black[0],0,46,.1)
@@ -52,14 +56,15 @@ show()
 # use Euler's method to answer question
 (t,test_black) = eulers_method((lambda x,y: cooling_law(y,c_black)),90,0,46,.1)
 (t,test_cream) = eulers_method((lambda x,y: cooling_law(y,c_cream)),85,0,46,.1)
-
 last_idx = find(test_black <= 80)[0]
+last_idxx = find(test_cream <= 75)[0]
+# Compare t[last_idx] to t[last_idxx]
+
 figure(2)
 clf()
 ax = gca()
 plot(t[0:(last_idx+1)],test_black[0:(last_idx+1)])
 
-last_idxx = find(test_cream <= 75)[0]
 plot(t[0:(last_idxx+1)],test_cream[0:(last_idxx+1)],'r')
 
 ylim((70,95))

@@ -2,7 +2,7 @@
 """
 Created on Fri Feb 01 15:49:39 2013
 
-@author: Nathan Sponberg, Kevin Joyce
+@author: Nathan Sponberg, Kevin Joyce, Patrick Funk
 """
 
 from scipy import *
@@ -20,6 +20,9 @@ def euler(x, f, dt):
 # Function simulates falling object, x is a vector contain
 # position and velocity data, outputs velocity and acceleration
 # dt is the time step
+def FallingBody(x,dt):
+    return array([x[1], -9.8])
+
 # Function simulates simple harmonic oscillation, x is a vector contain
 # position and velocity data, outputs velocity and acceleration
 # dt is the time step
@@ -27,11 +30,10 @@ def Oscillator(x,dt):
     k=1
     return array([x[1], -k*x[0]])
 
-def FallingBody(x,dt):
-    return array([x[1], -9.8])
-
 # Analytic solution for a falling body
 def FallingAnalytic(t,y0):
+  yprime0 = 0 # hack for now
+  #  return array([-1./2. * 9.8 * t**2 + y0,-9.8*t+y'0])
   return -1./2. * 9.8 * t**2 + y0
 
 # Analyitic solution for Oscillation
@@ -72,8 +74,10 @@ legend(("Analytic Solution","Numeric Solution"))
 #initial state for Oscillation
 startOscil = [array([1.0,0.0])]
 
+# 2 Simple Harmonic Motion
 #runs simulation for oscillator, time interval is 40000*0.001 = 40 secs
 oscilStates = OneDMotionSim(Oscillator, startOscil, 40000, 0.001)
+num_oscil_solution = array(oscilStates)
 
 figure(2)
 #plots the oscillation with position and velocity
@@ -102,15 +106,15 @@ pl.plot(E_fall_simulation)
 axhline(y=98)
 
 # Percent difference
-E_fall_change = abs(E_fall_total-E_fall_simulation(end))/(E_fall_total)
+E_fall_change = abs(E_fall_total-E_fall_simulation[-1])/(E_fall_total)
 
 # Total Energy for spring
 
-E_spring_total = 1/2
+E_spring_total = 1./2.
 
 # Total Energy for simulation
 
-E_spring_simulation = 1/2*array(oscilStates[:,0])**2 + 1/2*array(oscilStates[:,1])
+E_spring_simulation = 1./2.*array(num_oscil_solution[:,0])**2 + 1./2.*array(num_oscil_solution[:,1])
 
 # plot of result
 figure(2)
@@ -119,5 +123,5 @@ axhline(y=1/2)
 
 # percent difference
 
-E_spring_change = abs(E_spring_total-E_spring_simulation(end))/(E_spring_total)
+E_spring_change = abs(E_spring_total-E_spring_simulation[-1])/(E_spring_total)
 
