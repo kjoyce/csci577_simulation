@@ -92,14 +92,14 @@ legend(("Analytic","Numeric"))
 
 # plot of Energy vs. time
 figure()
-plot(fall_t,E_fall_simulation)
 plot(fall_t,E_fall_analytic)
+plot(fall_t,E_fall_simulation)
 title("Energy vs. time of Falling Obect, n={:d}".format(fall_resolution))
 xlabel("Time (sec)")
 ylabel("Energy (J)")
-legend(("Analytic","Numeric"))
+legend(("Analytic","Numeric"),loc='right')
 comment = r"$ \left|\frac{{E(0) - E(t_{{end}})}}{{E(0)}}\right| \approx {0:.4f} $".format(E_fall_change)
-text(0,98.175,comment,fontsize=20)
+text(0.25,98.15,comment,fontsize=20)
 show()
 
 ################################
@@ -154,8 +154,8 @@ legend(("Analytic","Numeric"))
 
 # plot of Energy
 figure()
-plot(osc_t,E_spring_simulation)
 plot(osc_t,E_spring_analytic)
+plot(osc_t,E_spring_simulation)
 title("Energy vs. Time for Spring, n={:d}".format(osc_resolution))
 legend(("Analytic","Numeric"))
 comment = r"$ \left|\frac{{E(0) - E(t_{{end}})}}{{E(0)}}\right| \approx {0:.4f} $".format(E_spring_change)
