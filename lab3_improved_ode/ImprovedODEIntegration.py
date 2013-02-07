@@ -49,12 +49,12 @@ def OscilAnalytic(k, m, x0, dt, numPoints):
     t = linspace(0,dt*numPoints,numPoints)
     return array([x0*cos(sqrt(k/m)*t), -x0*sqrt(k/m)*sin(sqrt(k/m)*t)]).T
 
-def method_test(method):
-    if method == predictor_corrector:
-        return "yes"
-    else:
-        return "no"
-
+def oscil_energy_calc(k,m,x0,states):
+    return 1./2.*k*x0*array(states[:,0])**2 + 1./2.*m*array(states[:,1])**2
+    
+def energy_percent_change(simEnergy,totalEnergy):
+    return abs(totalEnergy-simEnergy[-1])/(totalEnergy)
+    
 def integrate(method, f, y0, t):
     y = ones([size(t), size(y0)])    
     if method == predictor_corrector:
@@ -81,7 +81,7 @@ startOscil = [array([x0,xprime0])]
 
 #runs simulation for oscillator, dt is resolution divided by total 
 #time interval
-osc_resolution = 100
+osc_resolution = 270
 dt = (b-a)/osc_resolution
 t = linspace(a, b, osc_resolution)
 num_oscil_solution1 = integrate(euler, Oscillator, startOscil, t)
@@ -99,6 +99,17 @@ E_spring_total = 1./2.*k*x0
 
 # Total Energy for simulation
 
+eulerEnergy = oscil_energy_calc(k,m,x0,num_oscil_solution1)
+eulerRichEnergy = oscil_energy_calc(k,m,x0,num_oscil_solution2)
+rungeKuttaEnergy = oscil_energy_calc(k,m,x0,num_oscil_solution3)
+predictorEnergy = oscil_energy_calc(k,m,x0,num_oscil_solution4)
+analyticEnergy = oscil_energy_calc(k,m,x0,osc_analytic)
+
+eulerPercentChange = energy_percent_change(eulerEnergy,E_spring_total)
+eulerRichPercentChange = energy_percent_change(eulerRichEnergy,E_spring_total)
+rungePercentChange = energy_percent_change(rungeKuttaEnergy,E_spring_total)
+predictorPercentChange = energy_percent_change(predictorEnergy,E_spring_total)
+
 #E_spring_simulation = 1./2.*k*x0*array(num_oscil_solution[:,0])**2 + 1./2.*m*array(num_oscil_solution[:,1])**2
 #E_spring_analytic = 1./2.*k*x0*array(osc_analytic[:,0])**2 + 1./2.*array(osc_analytic[:,1])**2
 
@@ -109,15 +120,15 @@ E_spring_total = 1./2.*k*x0
 
 figure(1)
 #plot(t,num_oscil_solution1[:,0])
-#plot(t,num_oscil_solution2[:,0])
-plot(t,num_oscil_solution3[:,0])
-plot(t,num_oscil_solution4[:,0])
+plot(t,num_oscil_solution2[:,0])
+#plot(t,num_oscil_solution3[:,0])
+#plot(t,num_oscil_solution4[:,0])
 plot(t,osc_analytic[:,0])
 title("Simple Harmonic Motion, n={:d}".format(osc_resolution))
 xlabel("Time (sec)")
 ylabel("Displacement (meters)")
 legend(("Euler", "Euler Richardson", "Runge Kutta", "Analytic"))
-show()
+#show()
 '''
 figure()
 plot(osc_t,num_oscil_solution[:,1])
@@ -126,15 +137,18 @@ title("Velocity of Simple Harmonic Motion, n={:d}".format(osc_resolution))
 xlabel("Time (sec)")
 ylabel("Velocity (meters/sec)")
 legend(("Analytic","Numeric"))
+'''
 
-# plot of Energy
+#plot of Energy
 figure()
-plot(osc_t,E_spring_analytic)
-plot(osc_t,E_spring_simulation)
+plot(t,analyticEnergy)
+plot(t,eulerRichEnergy)
 title("Energy vs. Time for Spring, n={:d}".format(osc_resolution))
 legend(("Analytic","Numeric"))
-comment = r"$ \left|\frac{{E(0) - E(t_{{end}})}}{{E(0)}}\right| \approx {0:.4f} $".format(E_spring_change)
+comment = r"$ \left|\frac{{E(0) - E(t_{{end}})}}{{E(0)}}\right| \approx {0:.4f} $".format(eulerRichPercentChange)
 text(7,.52,comment,fontsize=20)
 
 show()
-'''
+
+
+
