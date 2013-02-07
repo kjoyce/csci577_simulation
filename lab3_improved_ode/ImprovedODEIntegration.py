@@ -28,6 +28,8 @@ def runge_kutta(f,t,x,dt):
     k4 = f(t+dt, x+k3)*dt
     return x + 1/6.*(k1+2*k2+2*k3+k4)        
     
+# Funtion performs the predictor corrector method on a function (f) that
+# is passed to it.
 def predictor_corrector(f,t,x,previousState,dt):
     xPredict = previousState + 2.*f(t,x)*dt
     return x + 1./2.*(f(t,xPredict) + f(t,x))*dt
@@ -60,7 +62,7 @@ def integrate(method, f, y0, t):
     if method == predictor_corrector:
         y[0] = y[0]*y0
         y[1] = runge_kutta(f,t,y[0],t[1] - t[0])
-        for i in range(1,size(t)-2):
+        for i in range(1,size(t)-1):
             y[i+1] = method(f,t[i],y[i],y[i-1],t[i+1]-t[i])
         return y
     else :
@@ -81,7 +83,7 @@ startOscil = [array([x0,xprime0])]
 
 #runs simulation for oscillator, dt is resolution divided by total 
 #time interval
-osc_resolution = 270
+osc_resolution = 500
 dt = (b-a)/osc_resolution
 t = linspace(a, b, osc_resolution)
 num_oscil_solution1 = integrate(euler, Oscillator, startOscil, t)
@@ -97,7 +99,7 @@ osc_analytic = OscilAnalytic(k,m,x0,dt,osc_resolution);
 
 E_spring_total = 1./2.*k*x0
 
-# Total Energy for simulation
+# Total Energy for simulations
 
 eulerEnergy = oscil_energy_calc(k,m,x0,num_oscil_solution1)
 eulerRichEnergy = oscil_energy_calc(k,m,x0,num_oscil_solution2)
@@ -105,50 +107,91 @@ rungeKuttaEnergy = oscil_energy_calc(k,m,x0,num_oscil_solution3)
 predictorEnergy = oscil_energy_calc(k,m,x0,num_oscil_solution4)
 analyticEnergy = oscil_energy_calc(k,m,x0,osc_analytic)
 
+# Pertentage of change in the total energy at the end of
+# each simulation
+
 eulerPercentChange = energy_percent_change(eulerEnergy,E_spring_total)
 eulerRichPercentChange = energy_percent_change(eulerRichEnergy,E_spring_total)
 rungePercentChange = energy_percent_change(rungeKuttaEnergy,E_spring_total)
 predictorPercentChange = energy_percent_change(predictorEnergy,E_spring_total)
 
-#E_spring_simulation = 1./2.*k*x0*array(num_oscil_solution[:,0])**2 + 1./2.*m*array(num_oscil_solution[:,1])**2
-#E_spring_analytic = 1./2.*k*x0*array(osc_analytic[:,0])**2 + 1./2.*array(osc_analytic[:,1])**2
+######################## Plots ########################
 
-
-# percent difference
-#E_spring_change = abs(E_spring_total-E_spring_simulation[-1])/(E_spring_total)
-
-
+###### Euler ######
+#simulation vs. analytic
 figure(1)
-#plot(t,num_oscil_solution1[:,0])
-plot(t,num_oscil_solution2[:,0])
-#plot(t,num_oscil_solution3[:,0])
-#plot(t,num_oscil_solution4[:,0])
+plot(t,num_oscil_solution1[:,0])
 plot(t,osc_analytic[:,0])
-title("Simple Harmonic Motion, n={:d}".format(osc_resolution))
+title("Simple Harmonic Motion (Euler), n={:d}".format(osc_resolution))
 xlabel("Time (sec)")
 ylabel("Displacement (meters)")
-legend(("Euler", "Euler Richardson", "Runge Kutta", "Analytic"))
-#show()
-'''
-figure()
-plot(osc_t,num_oscil_solution[:,1])
-plot(osc_t,osc_analytic[:,1])
-title("Velocity of Simple Harmonic Motion, n={:d}".format(osc_resolution))
-xlabel("Time (sec)")
-ylabel("Velocity (meters/sec)")
-legend(("Analytic","Numeric"))
-'''
-
+legend(("Euler", "Analytic"))
 #plot of Energy
-figure()
+figure(2)
+plot(t,analyticEnergy)
+plot(t,eulerEnergy)
+title("Energy vs. Time for Spring (Euler), n={:d}".format(osc_resolution))
+legend(("Analytic","Numeric"))
+comment = r"$ \left|\frac{{E(0) - E(t_{{end}})}}{{E(0)}}\right| \approx {0:.4f} $".format(eulerPercentChange)
+text(5.8,(.5 + eulerPercentChange/3.),comment,fontsize=14)
+###################
+
+###### Euler Richardson ######
+#simulation vs. analytic
+figure(3)
+plot(t,num_oscil_solution2[:,0])
+plot(t,osc_analytic[:,0])
+title("Simple Harmonic Motion (Euler Richardson), n={:d}".format(osc_resolution))
+xlabel("Time (sec)")
+ylabel("Displacement (meters)")
+legend(("Euler Richardson", "Analytic"))
+#plot of Energy
+figure(4)
 plot(t,analyticEnergy)
 plot(t,eulerRichEnergy)
-title("Energy vs. Time for Spring, n={:d}".format(osc_resolution))
+title("Energy vs. Time for Spring (Euler Richardson), n={:d}".format(osc_resolution))
 legend(("Analytic","Numeric"))
 comment = r"$ \left|\frac{{E(0) - E(t_{{end}})}}{{E(0)}}\right| \approx {0:.4f} $".format(eulerRichPercentChange)
-text(7,.52,comment,fontsize=20)
+text(5.8,(.5 + eulerRichPercentChange/3.),comment,fontsize=14)
+###################
+
+###### Runge Kutta ######
+#simulation vs. analytic
+figure(5)
+plot(t,num_oscil_solution3[:,0])
+plot(t,osc_analytic[:,0])
+title("Simple Harmonic Motion (Runge Kutta), n={:d}".format(osc_resolution))
+xlabel("Time (sec)")
+ylabel("Displacement (meters)")
+legend(("Runge Kutta", "Analytic"))
+#plot of Energy
+figure(6)
+plot(t,analyticEnergy)
+plot(t,rungeKuttaEnergy)
+title("Energy vs. Time for Spring (Runge Kutta), n={:d}".format(osc_resolution))
+legend(("Analytic","Numeric"))
+comment = r"$ \left|\frac{{E(0) - E(t_{{end}})}}{{E(0)}}\right| \approx {0:.4f} $".format(rungePercentChange)
+text(5.8,(.5 - rungePercentChange/3.),comment,fontsize=14)
+###################
+
+###### Predictor Corrector ######
+#simulation vs. analytic
+figure(7)
+plot(t,num_oscil_solution4[:,0])
+plot(t,osc_analytic[:,0])
+title("Simple Harmonic Motion (Predictor Corrector), n={:d}".format(osc_resolution))
+xlabel("Time (sec)")
+ylabel("Displacement (meters)")
+legend(("Predictor Corrector", "Analytic"))
+#plot of Energy
+figure(8)
+plot(t,analyticEnergy)
+plot(t,predictorEnergy)
+title("Energy vs. Time for Spring (Predictor Corrector), n={:d}".format(osc_resolution))
+legend(("Analytic","Numeric"))
+comment = r"$ \left|\frac{{E(0) - E(t_{{end}})}}{{E(0)}}\right| \approx {0:.4f} $".format(predictorPercentChange)
+text(5.8,(.5 - predictorPercentChange/3.),comment,fontsize=14)
+###################
 
 show()
-
-
 
