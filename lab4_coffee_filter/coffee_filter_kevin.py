@@ -23,14 +23,30 @@ def numeric_derivative(t,y):
 
 (tt,yy) = numeric_derivative(t,y)
 (ttt,yyy) = numeric_derivative(tt,yy)
+
 subplot(221)
 plot(t,y,'ro-')
+xlabel("Time (sec)")
+ylabel("Displacement (meters)")
+title("Displacement vs. Time")
 subplot(222)
 plot(tt,yy,'go-')
+xlabel("Time (sec)")
+ylabel("Est. Velocity (meters/sec)")
+title("Estimated Velocity vs. Time")
 subplot(223)
 plot(ttt,yyy,'ko-')
+xlabel("Time (sec)")
+ylabel("Est. Acceleration (meters/sq sec)")
+title("Estimated Acceleration vs. Time")
 subplot(224)
+xlabel("Est. Velocity (meters/sec)")
+ylabel("Est. Acceleration (meters/sq sec)")
+title("Acceleration vs. Velocity")
 plot(yy[1:],yyy,'ko')
+subplots_adjust(wspace=.4)  # Note this makes space
+subplots_adjust(hspace=.4)  # Note this makes space
+show()
 
 # solve linear least squares problem
 vt = (1/dot(yy,yy)*dot(yy[1:],yyy/9.8 + 1))**(-1) 
@@ -53,8 +69,9 @@ def f3(t,y):
 
 # This is a nonlinear model that has the parameter a
 # F = F_g + k v ^ a
-# Something is fishy with my least squares parameter selection
-# though
+# Something is wrong with my least squares parameter selection
+# I think I may just write a non-linear least squares using
+# fmin
 A=vstack([ones(size(yyy)),log(-yy[1:])])
 [k,a] = dot(inv(dot(A,A.T)),dot(A,log(yyy+9.8)))
 k = exp(k)
