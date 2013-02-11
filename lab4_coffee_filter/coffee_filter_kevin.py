@@ -49,14 +49,14 @@ subplots_adjust(hspace=.4)  # Note this makes space
 show()
 
 # solve linear least squares problem
-vt = (1/dot(yy,yy)*dot(yy[1:],yyy/9.8 + 1))**(-1) 
-#vt = -.45
+#vt = (1/dot(yy,yy)*dot(yy[1:],yyy/9.8 + 1))**(-1) 
+vt = -.4
 
 def f1(t,y):
-  return array([y[1], -9.8*(1-y[1]/vt)])
+  return array([y[1], -9.8*(1+abs(y[1])/vt)])
 
 def f2(t,y):
-  return array([y[1], -9.8*(1-(y[1]/-vt**2)**2)])
+  return array([y[1], -9.8*(1-(y[1]/vt)**2)])
 
 # This is a new model that has both v and v**2,  Not much better
 # solve least squares
@@ -69,25 +69,41 @@ def f3(t,y):
 
 # This is a nonlinear model that has the parameter a
 # F = F_g + k v ^ a
-# Something is wrong with my least squares parameter selection
-# I think I may just write a non-linear least squares using
-# fmin
-A=vstack([ones(size(yyy)),log(-yy[1:])])
-[k,a] = dot(inv(dot(A,A.T)),dot(A,log(yyy+9.8)))
-k = exp(k)
+# The outlying accelertion values are messing with 
+# my least squares estimation.  So, I will take them
+# out. This is bad in practice, but since we just
+# need ballpark estimates of the parameters it's ok
+idx = find(yyy>-4)
+ya = yyy[idx]
+yv = yy[1:]
+yv = yv[idx]
+A=vstack([ones(size(ya)),log(abs(yv))])
+[knot,a] = dot(inv(dot(A,A.T)),dot(A,log(ya+9.8)))
+k = exp(knot)/9.8
 def f4(t,y):
-  return array([y[1], -9.8 + -k*(-y[1])**a])
+  return array([y[1], -9.8 + 9.8*k*(abs(y[1]))**a])
 
+drag_string = "Drag model:$F_d(v) = k |v|^a,\quad k = {:.4f}, \quad a = {:.4f}$".format(k,a)
+titles = ["Linear Drag","Quadratic Drag","Two Term Quadratic Drag",drag_string]
+titles.reverse()
 for f in (f1,f2,f3,f4):
-  integrator = RungeKutta(f,[y[0],0],data[0][0],data[0][-1],.001)
+  integrator = RungeKutta(f,[y[0],yy[0]],data[0][0],data[0][-1],.001)
   (mt,my) = integrator.integrate()
   idx = find(my[0] > 0)
   mt = mt[idx]
   my = my[:,idx]
-  figure()
+  f=figure()
+  subplot(121)
   plot(t,y,'.')
   plot(mt,my[0])
+  xlabel("Time (sec)")
+  ylabel("Displacement (meters)")
+  subplot(122)
+  plot(tt,yy,'.')
+  plot(mt,my[1])
+  xlabel("Time (sec)")
+  ylabel("Velocity (meters)")
+  f.text(.5,.95,titles.pop(),horizontalalignment='center', verticalalignment='top')
   show()
 
-
-# use fmin to find parameters
+#def reg_numeric_derivative(t,y):
