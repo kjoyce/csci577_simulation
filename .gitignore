@@ -62,3 +62,14 @@ nosetests.xml
 *.ps
 *.ps.gz
 
+#Vim stuff
+*.swp
+*.swo
+
+# Images
+*.png
+*.jpg
+*.svg
+
+# Trashed files
+*/trash/*

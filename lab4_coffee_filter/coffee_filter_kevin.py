@@ -71,7 +71,7 @@ def f3(t,y):
 
 
 # This is a nonlinear model that has the parameter a
-# F = F_g + k v ^ a
+# F = F_g + k1 v ^ k2
 # The outlying accelertion values are messing with 
 # my least squares estimation.  So, I will take them
 # out. This is bad in practice, but since we just
@@ -81,12 +81,12 @@ ya = yyy[idx]
 yv = yy[1:]
 yv = yv[idx]
 A=vstack([ones(size(ya)),log(abs(yv))])
-[knot,a] = dot(inv(dot(A,A.T)),dot(A,log(ya+9.8)))
-k = exp(knot)/9.8
+[knot,kk2] = dot(inv(dot(A,A.T)),dot(A,log(ya+9.8)))
+kk1 = exp(knot)
 def f4(t,y):
-  return array([y[1], -9.8 + 9.8*k*(abs(y[1]))**a])
+  return array([y[1], -9.8 + kk1*(abs(y[1]))**kk2])
 
-drag_string = "Drag model:$F_d(v) = k |v|^a,\quad k = {:.4f}, \quad a = {:.4f}$".format(k,a)
+drag_string = "Drag model:$F_d(v) = k_1 |v|^{{k_2}},\quad k_1 = {:.4f}, \quad k_2 = {:.4f}$".format(kk1,kk2)
 titles = ["Linear Drag","Quadratic Drag","Two Term Quadratic Drag",drag_string]
 titles.reverse()
 for f in (f1,f2,f3,f4):
