@@ -3,7 +3,7 @@ from numpy import arange,array
 #debug_here = Tracer()
 class ODE_integrator(object):
   """ A class for integrating ODE's of the form dx/dt = f(x,t) over a finite interval (a,b).  By default, this performs fourth order Runge-Kutta. """
-  def __init__(self,f,y0,a,b,dt='.1'):
+  def __init__(self,f,y0,a,b,dt=.1):
     self.f = f
     self.a = a
     self.b = b

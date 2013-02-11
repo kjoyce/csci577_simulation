@@ -39,11 +39,10 @@ class TestIntegrator:
     self.integrators = [] # initialize list of ODE_integrators
     self.errors = [] # initialize energy errors
 
-  def iterate_test(self):
+  def iterate_test(self,next_dt):
     while True:
       self.n += 1
-      n = self.n+2
-      dt = (4.*((n-1)%2)+1)/10**(n/2) # this is .5, .01, .005,...
+      dt = next_dt(self.n) #next_dt needs to be a decreasing function of n
       integrator = self.method(self.f,self.y0,self.a,self.b,dt)
       (t,y) = integrator.integrate()
       self.integrators.append(integrator)
@@ -51,29 +50,51 @@ class TestIntegrator:
       err = oscillator_error(y[0],y[1],self.k,self.m)
       self.errors.append(err)
       print "dt = {}, error = {}".format(dt,err)
-      if self.n>2 and self.errors[-1] > self.errors[-2]:
-	print "Numerical Precision Errors!"
-	break
+#      if self.n>2 and self.errors[-1] > self.errors[-2]:
+#	print "Non-Decreasing Errors!"
+#	break
       if self.errors[-1] < self.tolerance:
 	break
     return
 
-  def plot_errors(self):
-    p = plot(-log(self.dts),self.errors,'o')
+  # you can pass some function of dt
+  def plot_errors(self,f=lambda dt:dt,upper=Inf):
+    dts = array(self.dts)
+    errs = array(self.errors)
+    idx = find(dts<upper)
+    p = plot(f(array(dts[idx])),errs[idx],'o')
+    return p
 
-tolerance = .0001
+### the following function change the density of dts
+# this decreases by .5, .01, .005,...
+def exp_decrease(n):
+  n = n+2
+  return (4.*((n-1)%2)+1)/10**(n/2) 
+
+# this is 10, 
+def linear_decrease(n):
+  return 1./(n*10.)*10
+
+# this is the logarithm of linear_decrease
+def log_decrease(n):
+    return 1./log(1./linear_decrease(n+1))
+
+# Usage example
+tolerance = .01
 print "----- Runge-Kutta --------"
 rungekutta = TestIntegrator(RungeKutta,tolerance)
-rungekutta.iterate_test()
+rungekutta.iterate_test(log_decrease)
 
 print "----- Euler-Richardson --------"
 eulerrich = TestIntegrator(EulerRichardson,tolerance)
-eulerrich.iterate_test()
+eulerrich.iterate_test(linear_decrease)
 
 print "----- Predictor Corrector --------"
 pc = TestIntegrator(PredictorCorrector,tolerance)
-pc.iterate_test()
+pc.iterate_test(linear_decrease)
 
+# Be careful with this... it takes a while at 10^-6
 print "----- Naive Euler --------"
 euler = TestIntegrator(Euler,tolerance)
-euler.iterate_test()
+euler.iterate_test(exp_decrease)
+

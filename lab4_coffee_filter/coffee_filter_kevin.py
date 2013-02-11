@@ -46,7 +46,10 @@ title("Acceleration vs. Velocity")
 plot(yy[1:],yyy,'ko')
 subplots_adjust(wspace=.4)  # Note this makes space
 subplots_adjust(hspace=.4)  # Note this makes space
+gca().hlines(0,-.8,-.1)
+xlim((-.8,-.1))
 show()
+
 
 # solve linear least squares problem
 #vt = (1/dot(yy,yy)*dot(yy[1:],yyy/9.8 + 1))**(-1) 
