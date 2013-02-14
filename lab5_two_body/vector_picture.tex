@@ -1,0 +1,33 @@
+% Run the command $ pdflatex --jobname=vector_graphic %
+% to make this a single graphic
+\documentclass{homework}
+\usepackage{graphics}
+\usepackage{tikz}
+\usepackage{cmacros}
+\pgfrealjobname{histogram_template}
+\begin{document}
+
+\beginpgfgraphicnamed{vector_graphic}
+  \tikzset{
+     sun/.style={circle,fill=yellow,inner sep=0,minimum size=1em},
+     earth/.style={circle,fill=blue,inner sep=0,minimum size=.6em},
+     jupiter/.style={circle,fill=red,inner sep=0,minimum size=.8em}
+   }
+\begin{tikzpicture}[scale=3,auto]
+\node (sun)     at (0,0) [sun,label=below:Sun] {};
+\node (earth)   at (1,1.5) [earth,label=above:Earth] {};
+\node (jupiter) at (3,1) [jupiter,label=right:Jupiter] {};
+\draw[-latex] (sun) -- node {$\vect{r_1}$} (earth);
+\draw[-latex] (sun) -- node[swap] {$\vect{r_2}$} (jupiter);
+\draw[-latex] (jupiter) -- node {$\vect{r_{21}}$} (earth);
+\draw[dotted] (earth)   -- node {$x_2 - x_1$} 
+	      (3,1.5)   -- node {$y_2 - y_1$} 
+	      (jupiter) -- node {$y_2$}
+	      (3,0)     -- node {$x_2$} 
+	      (sun)     -- node {$y_1$}
+	      (0,1.5)   -- node {$x_1$} (earth);
+\end{tikzpicture}
+\endpgfgraphicnamed
+
+\end{document}
+

@@ -9,6 +9,8 @@ debug_here = Tracer()
 GM = 4*pi**2
 Gm1 = .001*GM
 Gm2 = .04*GM
+years = 100.
+num_samples = 1000
  
 def two_body(state,t):  #OUCH! The signature is reversed for odeint!
   x1 = array([state[0],state[1]])  # body 1 position
@@ -25,25 +27,39 @@ def two_body(state,t):  #OUCH! The signature is reversed for odeint!
   derivatives = array([v1,a1,v2,a2]).T.flatten(1)
   return derivatives
  
-times = linspace(0.0,20.,300)
-yinit = array([2.52,0,0,sqrt(GM/2.52),5.24,0,0,sqrt(GM/5.24)])  # initial values
-y = odeint(two_body,yinit,times)
-y = y.T
-#E = .5*Gm1*sum(y[2:3]**2) - Gm1/r1 - Gm2/r2 - 
+times = linspace(0.0,years,num_samples)
+xinit = array([2.52,0,0,sqrt(GM/2.52),5.24,0,0,sqrt(GM/5.24)])  # initial values
+x = odeint(two_body,xinit,times)
+x = x.T
+
+r1 = sqrt(x[0]**2 + x[1]**2)
+r2 = sqrt(x[4]**2 + x[5]**2)
+r21 = sqrt( (x[4]-x[0])**2 + (x[5]-x[1])**2)
+E = .5*(Gm1*x[2]**2 + Gm2*x[3]**2) - GM*( Gm1/r1 + Gm2/r2 + Gm1*Gm2/r21 ) 
+L = Gm1*(x[0]*x[3] - x[1]*x[2]) + Gm2*(x[4]*x[7] - x[5]*x[6])
+
+deltaE = (E[0]-E)/E[0]
+deltaL = (L[0]-L)/L[0]
 
 subplot(311)
-plot(y[0],y[1])
-plot(y[4],y[5])
+plot(x[0],x[1])
+plot(x[4],x[5])
 xlim((-20,20))
 grid()
 title('Planetary Orbit')
-xlabel('Horizontal distance (AU)')
+xlabel('Horizontal Distance (AU)')
 ylabel('Vertical Distance (AU)')
 
 subplot(312)
+plot(times,deltaE)
+xlabel('Time in years')
+ylabel('% $\Delta E /M$')
 grid()
 
 subplot(313)
+plot(times,deltaL)
+xlabel('Time in years')
+ylabel('% $\Delta L / M$')
 grid()
 
 show()
