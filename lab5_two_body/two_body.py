@@ -7,10 +7,17 @@ debug_here = Tracer()
  
 # Notice that parameters are global.
 GM = 4*pi**2
-Gm1 = .001*GM
-Gm2 = .04*GM
+m1 = .001
+m2 = .04
 years = 100.
 num_samples = 1000
+# Initial Conditions
+# Earth
+(x1,y1) = (2.52,0.)
+(v1,w1) = (0.,sqrt(GM/x1))
+# Juptier
+(x2,y2) = (5.24,0.)
+(v2,w2) = (0.,sqrt(GM/x2))
  
 def two_body(state,t):  #OUCH! The signature is reversed for odeint!
   x1 = array([state[0],state[1]])  # body 1 position
@@ -22,24 +29,27 @@ def two_body(state,t):  #OUCH! The signature is reversed for odeint!
   r2  = norm(x2)
   r21 = norm(x2 - x1)
 
-  a1 = -GM/r1**3*x1 + Gm2/r21**3*(x2-x1)
-  a2 = -GM/r2**3*x2 + Gm1/r21**3*(x1-x2)
+  a1 = -GM/r1**3*x1 + m2*GM/r21**3*(x2-x1)
+  a2 = -GM/r2**3*x2 + m1*GM/r21**3*(x1-x2)
   derivatives = array([v1,a1,v2,a2]).T.flatten(1)
   return derivatives
  
 times = linspace(0.0,years,num_samples)
-xinit = array([2.52,0,0,sqrt(GM/2.52),5.24,0,0,sqrt(GM/5.24)])  # initial values
+xinit = array([x1,y1,v1,w1,x2,y2,w1,w2])  # initial values, ugh... object oriented would be nice
 x = odeint(two_body,xinit,times)
 x = x.T
 
+######## Do RK4 HERE ############
+#################################
+
 r1 = sqrt(x[0]**2 + x[1]**2)
 r2 = sqrt(x[4]**2 + x[5]**2)
-r21 = sqrt( (x[4]-x[0])**2 + (x[5]-x[1])**2)
-E = .5*(Gm1*x[2]**2 + Gm2*x[3]**2) - GM*( Gm1/r1 + Gm2/r2 + Gm1*Gm2/r21 ) 
-L = Gm1*(x[0]*x[3] - x[1]*x[2]) + Gm2*(x[4]*x[7] - x[5]*x[6])
+r21 = sqrt( (x[4]-x[0])**2 + (x[5]-x[1])**2) 
+E = .5*(m1*(x[2]**2 + x[3]**2) + m2*(x[6]**2+x[7]**2)) - GM*( m1/r1 + m2/r2 + m1*m2/r21 ) 
+deltaE = (E-E[0])/E[0]
 
-deltaE = (E[0]-E)/E[0]
-deltaL = (L[0]-L)/L[0]
+L = m1*(x[0]*x[3] - x[1]*x[2]) + m2*(x[4]*x[7] - x[5]*x[6])
+deltaL = (L-L[0])/L[0]
 
 subplot(311)
 plot(x[0],x[1])
@@ -62,4 +72,6 @@ xlabel('Time in years')
 ylabel('% $\Delta L / M$')
 grid()
 
+subplots_adjust(wspace=.4)  # Note this makes space
+subplots_adjust(hspace=.4)  # Note this makes space
 show()
