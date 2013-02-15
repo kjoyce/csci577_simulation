@@ -35,7 +35,7 @@ def two_body(state,t):  #OUCH! The signature is reversed for odeint!
   return derivatives
  
 times = linspace(0.0,years,num_samples)
-xinit = array([x1,y1,v1,w1,x2,y2,w1,w2])  # initial values, ugh... object oriented would be nice
+xinit = array([x1,y1,v1,w1,x2,y2,v2,w2])  # initial values, ugh... object oriented would be nice
 x = odeint(two_body,xinit,times)
 x = x.T
 
