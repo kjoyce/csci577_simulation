@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Created on Sat Feb 16 18:17:33 2013
 
@@ -67,7 +68,7 @@ InitStates = [array([x1,y1,v1,w1]), array([x2,y2,v2,w2]),
               array([x5,y5,v5,w5])]
               
 #Chose the initial state you want by changing the index            
-xinit = InitStates[0]            
+xinit = InitStates[2]            
 
 #Two Body function with the second body fixed (second star)
 def PlanetOrbit(state,t): #OUCH! The signature is reversed for odeint!
@@ -109,17 +110,25 @@ text(-8,6,comment,fontsize=10)
 #Animation
 fig = plt.figure(figsize = (6,6))
 ax = plt.axes(xlim=(-9, 11), ylim=(-10, 10))
-line, = ax.plot([], [], 'g^')
+line, = ax.plot([], [])
+point, = ax.plot([], [], 'g^')
 ax.plot(0,0,'ro')
 ax.plot(2,0,'yo')
 title('Planetary Orbit Animation')
 xlabel('Horizontal Distance (AU)')
 ylabel('Vertical Distance (AU)')
 
+#Number of frames to skip (n-1)
+frameskip = 1
+
+#Set to true to trace planetary orbit in animation
+trace = False
+
 #Initial animation state
 def init():
     line.set_data([], [])
-    return line,
+    point.set_data([], [])
+    return line, point,
 
 #Animation loop
 def animate(i):
@@ -129,9 +138,22 @@ def animate(i):
     line.set_data(x, y)
     return line,
     
+def animateTrace(i):
+    if trace:
+        x = scipy_result[0,0:frameskip*i]
+        y = scipy_result[1,0:frameskip*i]
+        line.set_data(x, y)
+        
+    px = scipy_result[0,frameskip*i]
+    py = scipy_result[1,frameskip*i]    
+    point.set_data(px,py)
+    return line, point,
+    
 #Start animation
-anim = animation.FuncAnimation(fig, animate, init_func=init,
-                               frames=1000, interval=30, blit=True)
+anim = animation.FuncAnimation(fig, animateTrace, init_func=init,
+                               frames=1000/frameskip, interval=40,
+                               blit=True)
   
                   
 plt.show()
+
