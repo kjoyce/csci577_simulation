@@ -4,22 +4,8 @@ from IPython.core.debugger import Tracer
 from matplotlib.pyplot import *
 from matplotlib.mlab import find
 from ODE_integrator import RungeKutta
+from two_body_params import *
 debug_here = Tracer()
- 
-# Notice that parameters are global.
-GM = 4*pi**2
-m1 = .001
-m2 = .04
-years = 100.
-num_samples = 1000
-# Initial Conditions
-# Earth
-(x1,y1) = (2.52,0.)
-(v1,w1) = (0.,sqrt(GM/x1))
-# Juptier
-(x2,y2) = (5.24,0.)
-(v2,w2) = (0.,sqrt(GM/x2))
- 
 def two_body(state,t):  #OUCH! The signature is reversed for odeint!
   x1 = array([state[0],state[1]])  # body 1 position
   v1 = array([state[2],state[3]])  # body 1 velocity
@@ -35,10 +21,13 @@ def two_body(state,t):  #OUCH! The signature is reversed for odeint!
   derivatives = array([v1,a1,v2,a2]).T.flatten(1)
   return derivatives
  
-times = linspace(0.0,years,num_samples)
-xinit = array([x1,y1,v1,w1,x2,y2,v2,w2])  # initial values, ugh... object oriented would be nice
 scipy_result = odeint(two_body,xinit,times)
 scipy_result = scipy_result.T
+
+atoll=10**-13
+rtoll=10**-14
+high_prec_result = odeint(two_body,xinit,times,atol=atoll,rtol=rtoll)
+high_prec_result = high_prec_result.T
 
 ######## Do RK4 HERE ############
 f = lambda t,x: two_body(x,t)
@@ -46,7 +35,12 @@ rk4 = RungeKutta(f,xinit,0.,years,years/num_samples)
 (t,rk4_result) = rk4.integrate()
 rk4_result = rk4_result[:,:-2]
 #################################
-for x in (scipy_result,rk4_result):
+
+iterates = ((scipy_result,"Scipy odeint default tolerances"),
+	    (rk4_result,"Runge Kutta 4th Order"),
+	    (high_prec_result,"odeint rtol={} atol={}".format(rtoll,atoll)))
+
+for x,t in iterates:
   figure()
   r1 = sqrt(x[0]**2 + x[1]**2)
   r2 = sqrt(x[4]**2 + x[5]**2)
@@ -62,9 +56,10 @@ for x in (scipy_result,rk4_result):
   plot(x[4],x[5])
   xlim((-20,20))
   grid()
-  title('Planetary Orbit')
+  title(t)
   xlabel('Horizontal Distance (AU)')
   ylabel('Vertical Distance (AU)')
+  gca().axis('equal')
 
   subplot(312)
   plot(times,deltaE)
@@ -81,3 +76,5 @@ for x in (scipy_result,rk4_result):
   subplots_adjust(wspace=.4)  # Note this makes space
   subplots_adjust(hspace=.4)  # Note this makes space
   show()
+
+
