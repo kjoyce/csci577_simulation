@@ -1,6 +1,5 @@
+
 #Object Oriented N-Body Problem
-# I decided to jump in and flounder. Maybe you guys can see where my understanding of OO 
-# begins and ends and we can discuss on friday. Hopefully this is in some way helpful to us all.
 
 
 #Body object to create n bodies with, which will be passed into System via bodylist
@@ -14,45 +13,51 @@ class Body(object):
         self.m=m
         
     def state(self):
-        return [x,v,m]
+        return [self.x,self.v,self.m]
+
 
 class System(object):
     def __init__(self,bodylist):
+        self.bodylist=bodylist
         self.n=len(bodylist)
-    def state(self,bodylist):
-        state=[]
-        for i in range(n):
-            state.append(bodylist[i].state) 
-        state=array(state)
-        return state                        
+    def get_state(self):
+        sys_state=[]
+        for i in range(self.n):
+            sys_state.append(self.bodylist[i].state())
+        
+        return sys_state
         
         
         
             
-class Force(object):
-    def __init__(self,x1,x2,m1,m2):
-        self.x1=x1
-        self.x2=x2
-        self.m1=m1
-        self.m2=m2
-        G=6.67*10**(-11)
+class Force(System):
+    def __init__(self,system):
+        self.n=system.n
+        self.system=system
+        self.G=6.67*10**(-11)
     def component_forces(self,x1,x2,m1,m2):
         r=norm(x2-x1)
         xdist=norm(x2[0]-x1[0])
         ydist=norm(x2[1]-x1[1])
-        Fx=-G*m1*m2*xdist/r**3
-        Fy=-G*m1*m2*ydist/r**3
+        Fx=-self.G*m1*m2*xdist/r**3
+        Fy=-self.G*m1*m2*ydist/r**3
         return array([Fx,Fy])
     
-class Force_Pair(Force, System):
-    def __init__(self):
+    def net_force(self):
+        
+        
         force_pairs=array([[0 for col in range(self.n)] for row in range(self.n)])
-    
+        Fxy_net=[]
+        
         for i in range(0,self.n):
-            x1=System.state[i][0]
-            m1=System.state[i][2]
-            for j in range(i,self.n):
-                x2=System.state[j][0]
-                m2=System.state[j][2]
-                force_pairs[i][j]=Force.component_forces(x1,x2,m1,m2)
-                
+            x1=self.system.get_state()[i][0]
+            m1=self.system.get_state()[i][2]
+            for j in range(i+1,self.n):
+                x2=self.system.get_state()[j][0]
+                m2=self.system.get_state()[j][2]
+                force_pairs[i+1][j]=self.component_forces(x1,x2,m1,m2)
+        
+        for i in range(self.n):
+                Fxy_net.append(sum(force_pairs[i], axis=0))
+        
+        return Fxy_net
