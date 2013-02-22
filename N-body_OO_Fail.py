@@ -1,4 +1,3 @@
-
 #Object Oriented N-Body Problem
 
 
@@ -49,15 +48,18 @@ class Force(System):
         force_pairs=array([[0 for col in range(self.n)] for row in range(self.n)])
         Fxy_net=[]
         
-        for i in range(0,self.n):
+        for i in range(self.n):
             x1=self.system.get_state()[i][0]
             m1=self.system.get_state()[i][2]
             for j in range(i+1,self.n):
                 x2=self.system.get_state()[j][0]
                 m2=self.system.get_state()[j][2]
-                force_pairs[i+1][j]=self.component_forces(x1,x2,m1,m2)
+                force_pairs[i+1][j]=self.component_forces(self.x1,self.x2,self.m1,self.m2)
         
         for i in range(self.n):
-                Fxy_net.append(sum(force_pairs[i], axis=0))
+            sum_force=sum(force_pairs, axis=1)[i]+sum(force_pairs, axis=0)[i]-force_pairs[i][i+1]
+            Fxy_net.append(sum_force)
         
         return Fxy_net
+        
+
