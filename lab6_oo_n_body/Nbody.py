@@ -48,17 +48,16 @@ class Force(object):
 	x2 = x[2*j:2*j+2]
 	m2 = bod[j].mass
 	pairs[:,i,j] = self.interaction(x1,m1,x2,m2)
-    debug_here()
     accelerationsx = sum(pairs[0] - pairs[0].T,axis=1)
     accelerationsy = sum(pairs[1] - pairs[1].T,axis=1)
     accelerations = array([accelerationsx,accelerationsy]).flatten(1)
-    return array([x[2*size(bod):],accelerations]).flatten(1)
+    return array([x[2*size(bod):],accelerations]).T.flatten(1)
     
   def interaction(self,x1,m1,x2,m2):
-    r=norm(x2-x1)
     G = self.constant
-    xdist=norm(x2[0]-x1[0])
-    ydist=norm(x2[1]-x1[1])
+    r=norm(x2-x1)
+    xdist=(x1[0]-x2[0])
+    ydist=(x1[1]-x2[1])
     Fx=-G*m1*m2*xdist/r**3
     Fy=-G*m1*m2*ydist/r**3
     return array([Fx,Fy])
