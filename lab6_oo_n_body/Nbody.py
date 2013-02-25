@@ -25,11 +25,7 @@ class System(object):
     for i in range(n):
       pos.append(bodies[i].pos)
       vel.append(bodies[i].vel)
-    #debug_here()
-    self.init = array([pos,vel]).flatten(1)
-
-  def get_force(self):
-    pass
+    self.init = array([pos,vel]).T.flatten(1)
 
 class Force(object):
   def __init__(self,system,constant):
@@ -58,9 +54,9 @@ class Force(object):
     r=norm(x2-x1)
     xdist=(x1[0]-x2[0])
     ydist=(x1[1]-x2[1])
-    Fx=-G*m1*m2*xdist/r**3
-    Fy=-G*m1*m2*ydist/r**3
-    return array([Fx,Fy])
+    ax=-G*m2*xdist/r**3
+    ay=-G*m2*ydist/r**3
+    return array([ax,ay])
 
 class Integrator(object):
   def __init__(self,system,force,):
@@ -87,3 +83,16 @@ class InitialConditions(object):
 	bod.append(Body(temp[0:-1],temp[-1]))
       return System(bodies=bod) 
   
+G =1
+files = ('euler_init.txt','montgomery_init.txt','lagrange_init.txt')
+for fname in files:
+  reader = InitialConditions()
+  sys_1 = reader.read_file(fname)
+  force = Force(sys_1,G)
+  t = linspace(0.,100.,1000)
+  x = odeint(force,sys_1.init,t)#,rtol=10**-13,atol=10**-14)
+  figure()
+  plot(x[:,0],x[:,1])
+  plot(x[:,2],x[:,3])
+  plot(x[:,4],x[:,5])
+  show()
