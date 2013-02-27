@@ -58,15 +58,6 @@ class Force(object):
     ay=-G*m2*ydist/r**3
     return array([ax,ay])
 
-class Integrator(object):
-  def __init__(self,system,force,):
-    self.system = system
-    self.force = force
-    self.nbodies = size(self.system.bodies)
-
-  def integrate(self):
-    pass
-#    odeint(???,xinit,t);
 
 
 class InitialConditions(object):
@@ -76,7 +67,7 @@ class InitialConditions(object):
   def read_file(self,filename):
     with open(filename, 'r') as f:
       reader = csv.reader(f,delimiter=" ")
-      numBodies = int(reader.next()[0]) # maybe do some check later but useless as is
+      numBodies = int(reader.next()[0]) 
       bod = []
       for row in reader:
 	temp = [float(i) for i in row]  
@@ -90,7 +81,7 @@ for fname in files:
   sys_1 = reader.read_file(fname)
   force = Force(sys_1,G)
   t = linspace(0.,100.,1000)
-  x = odeint(force,sys_1.init,t)#,rtol=10**-13,atol=10**-14)
+  x = odeint(force,sys_1.init,t)
   figure()
   plot(x[:,0],x[:,1])
   plot(x[:,2],x[:,3])
