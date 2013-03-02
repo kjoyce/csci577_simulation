@@ -66,11 +66,13 @@ nosetests.xml
 *.swp
 *.swo
 
-# Images
+# Images and movies
 *.png
 *.jpg
 *.svg
 *.avi
+*.mp4
+*.gif
 
 # Trashed files
 */trash/*
