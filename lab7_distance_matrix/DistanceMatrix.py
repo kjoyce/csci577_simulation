@@ -75,11 +75,10 @@ if __name__ == '__main__':
   colorbar()
   title("Domain: $[0.0,{}]$, Distance from $({},{})$".format(L,x[pt_idx],y[pt_idx]))
 
-  print "L = {}".format(L)
-  print "(x,y) = ({},{})".format(x[pt_idx],y[pt_idx])
   show()
 
-  L = 5
+  L = 5.
+  print "L = {}".format(L)
   x = array([1,2,3,4])
   y = array([3,2,1,4])
   z = array([2,3,1,4])
