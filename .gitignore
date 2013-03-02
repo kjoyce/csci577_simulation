@@ -70,6 +70,7 @@ nosetests.xml
 *.png
 *.jpg
 *.svg
+*.avi
 
 # Trashed files
 */trash/*
