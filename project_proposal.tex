@@ -1,0 +1,62 @@
+\documentclass{homework}
+\usepackage{hyperref}
+\course{Computer Simulation - CSCI 577}
+\docdate{1 March 2013}
+\lhead{Kevin Joyce}
+\begin{document}
+{\LARGE\bf Final Project Proposal}
+\vspace{1cm}
+
+For the final project in the spring 2013 computer simulation course, I propose
+to investigate two specific computational problems in modeling the Greenland
+ice-sheet.  The primary question is regarding regularization of numerical
+spacial derivatives of surface velocity data of the ice-sheet, and the
+secondary question (if time allows) will be to investigate a modification of
+the method described in \cite{johnson} for estimating the ice-sheet bed
+elevation to penalize diffusivity.
+
+The primary question involves computing numerical derivatives in the presence
+of noise.  This is known \cite{hanke} to be highly sensitive to even very small
+perterbations.  Although typically thought of as a forward problem, it can
+be phrased in the framework of an ill-posed inverse problem using elementary
+calculus \cite{hanke}.   There is a wealth of literature and techniques for regularizing
+ill-posed inverse problems, and algorithms have been adapted to this very
+technique \cite{knowles} \cite{chartrand}.   
+
+Spacial surface velocity data collected from the Greenland ice-sheet is know to
+be relatively precise via satellite interferometry (Is this right, or should I
+just say telemetry?) , however, does have small amounts of noise\cite{unknown}
+.  The rate of change of the surface velocity is of interest to who model
+ice-sheets, and the naive computation of numeric derivatives produces
+unsatisfactory results.  
+
+For my primary question, I propose to adapt algorithms developed in
+\cite{hanke} and \cite{chartrand} to regularize the spacial surface velocity
+data of the Greenland ice-sheet.  I hope to also come up with some way of
+cross-validating my results, either by running on test cases or searching the
+literature for acceleration data that is known to be more accurate.
+
+As time allows, I hope to investigate a modification of the novel procedure for
+interpolating ice-sheet bed elevation data described in \cite{johnson}.
+Although better than conventional methods for estimating bed elevation, the
+technique is thought to be overly diffusive \cite{johnson}.  Compensating for
+these diffusive effects may be achieved through some type of regularization.
+
+My secondary question will involve becoming more familiar with the bed
+elevation problem and so-called ``physics-based interpolation'' techniques.
+Physics based interpolation is known to those in image processing as total
+variational inpainting.  Again, this technique can be phrased in the framework
+of an ill-posed inverse problem.  It may be possible to use results in the
+literature on inverse problems to inform the addition of a diffusivity reducing
+term in the model.  As time allows, (and hopefullly beyhond the scope of this
+course) I will investigate this problem.
+
+\begin{thebibliography}{[99]}
+\bibitem{chartrand} R. Chartrand, Numerical differentiation of noisy, non-smooth data. Los Alamos National Laboratory.
+\bibitem{hanke} M. Hanke and O. Scherzer, Inverse problems light: numerical differentiation, Amer. Math. Monthly, 108 (2001), pp. 512–521.
+\bibitem{johnson} J. V. Johnson and D. J. Brinkerhoff and S. Nowicki, A novel mass conserving bed algorithm to estimate errors in bed elevation associated with flight line spacing. Journal of Geophysical Research, Vol. ??? 
+\bibitem{unknown} ??? Ice Sheet Interferometry Data
+\bibitem{knowles} I. Knowles and R. Wallace, A variational method for numerical differentiation, Numer. Math., 70 (1995), pp. 91–110.  
+\end{thebibliography}
+
+\end{document}
