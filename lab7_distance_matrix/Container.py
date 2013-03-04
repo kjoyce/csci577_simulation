@@ -56,5 +56,6 @@ def InitalizeContainer(filename):
           container.addParticle(state[0:-1],state[-1])
       return container
         
-test1 = InitalizeContainer("particle_test.txt")
-test1.summary()  
+if __name__ == '__main__':
+  test1 = InitalizeContainer("particle_test.txt")
+  test1.summary()  
