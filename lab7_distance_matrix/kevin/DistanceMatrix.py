@@ -1,4 +1,4 @@
-from numpy import array,tile
+from numpy import array,tile,size
 from IPython.core.debugger import Tracer
 debug_here = Tracer()
 
@@ -21,9 +21,10 @@ class PeroidicDistanceMatrix(DistanceMatrix):
   def __init__(self,L):
     self.L = L
 
-  # Think hard about why this works.  This is the map (x,y) -> d where d is the
-  # one dimensional toroidal distance. It is essentialy one phase (y dimension)
-  # of a ''flat'' sine wave (x dimension).  Remember, a%b = a mod b 
+  # Think hard about why this works.  This is the map (x,y) -> d
+  # where d is the one dimensional toroidal distance. It is
+  # essentialy one phase (y dimension) of a ''flat'' sine wave (x
+  # dimension).  Remember, a%b = a mod b 
   def signed_distance(self,x,y):
     L = self.L
     flat_wave = lambda x,L: (x-.5*L)%L-.5*L
