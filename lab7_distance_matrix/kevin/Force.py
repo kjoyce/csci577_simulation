@@ -27,13 +27,16 @@ class LeonardJonesForce(object):
     return self.get_accelerations(x)
 
   def get_accelerations(self,x):
+    distance_matrix = self.distance_matrix
+    x = x.T  # Me and DistanceMatrices are fat, while containers are long
     sigma,eps,m = self.sigma,self.eps,self.masses
-    dx = distance_matrix(x)
+    dx = distance_matrix(x)		    
     r = sum(dx**2,axis=0)**.5
     r[eye(len(r),dtype='bool')] = nan	    # this is to avoid division by zero
-    fmatrix = 24*eps/r*(2*(sigma/r)**12 - (sigma/r)**6)*dx 
+    fmatrix = 24*eps/r*(2*(sigma/r)**12 - (sigma/r)**6)*dx
     fmatrix[:,eye(len(r),dtype='bool')] = 0 # set them back to zero
-    return sum(fmatrix,axis=1)/m
+    ans = sum(fmatrix,axis=1)/m # See comment above
+    return ans.T
 
 
 #### Unit Testing ####
@@ -48,12 +51,12 @@ if __name__ == '__main__':
   y = array([3,2,1,4])
   z = array([2,3,1,4])
   p = array([x,y,z],dtype='float64')
-  dpdt = eye(4)[:3]
+  dpdt = eye(4)[:,:3]
   print "x = "
   print p
   print "dxdt = "
   print dpdt
   print "dvdt = "
-  dvdt = force.get_accelerations(p)
+  dvdt = force.get_accelerations(p.T)
   print "force((x,dxdt),0) = "
   print dvdt
