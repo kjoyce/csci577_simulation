@@ -20,7 +20,6 @@ class Container(object):
     self._m = []  # The @property bit makes them private
     self._v = []  # This idea came from the group Surt
     self.dims = dims
-    self.circles = []
 
   def __repr__(self):
     return_string = super(Container,self).__repr__() + "\n"
@@ -69,37 +68,6 @@ class Container(object):
     else:
       raise ValueError('must pass odd numer of args greater than 2')
 
-  def __make_circle(self, xy, radius, ax, color="lightsteelblue", facecolor="green", alpha=.6):
-    """ add a circle to ax= or current axes
-    """
-    e = Circle( xy=xy[::-1], radius=radius ) # notice the stupid CS reversed coordinates
-    ax.add_artist(e)
-    e.set_clip_box(ax.bbox)
-    e.set_edgecolor( color )
-    e.set_linewidth(3)
-    e.set_facecolor( facecolor )  # "none" not None
-    e.set_alpha( alpha )
-    e.set_animated( True )
-    print "HERE: "
-    print e
-    return e
-
-  def __set_all_circles(self,ax):
-    for x in self.x:
-      self.circles.append(self.__make_circle(x,.1,ax))
-
-  def __update_all_circles(self,ax):
-    for i in range(len(self.circles)):
-      self.circles[i].update_from(self.__make_circle(self.x[i],.1,ax))
-
-  def draw(self,ax):
-    ax.set_xlim((0,self.L[0]))
-    ax.set_ylim((0,self.L[1]))
-    if not(self.circles):
-      self.__set_all_circles(ax)
-    else:
-      self.__update_all_circles(ax)
-      
   def integrate(self,dx,dv):
     self._x = self.x + dx
     self._v = self.v + dv
@@ -118,13 +86,4 @@ if __name__ == '__main__':
   print "adding with tuple {}".format(args)
   c.addParticle(*args)
   print c
-  c = Container(2,5)
-  c.addParticle(2,2,0,0,1.)
-  c.addParticle(3,6,0,0,1.)
-  print c
-  figure(figsize=(c.L[0]*1.3,c.L[1]*1.3))
-  ax = gca()
-  c.draw(ax)
-  ax.set_aspect('equal')
-  show()
   

@@ -1,0 +1,6 @@
+#!/bin/sh
+
+ffmpeg -i $1 -s 400x400 -vframes 200 out%03d.gif
+convert out*gif -loop 0 $2 
+rm out*gif
+convert $2 -deconstruct $2
