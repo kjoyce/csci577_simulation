@@ -9,15 +9,24 @@ class VerletIntegrator(object):
     return self.forward(f,x,v,t)
 
   def forward(self,f,x,v,t):
-    dt = self.dt
-    dx = v*dt + .5 * f(x,v,t)*dt**2
+    a = f(x,v,t)
+    dt = self.dt 
+    dx = (v + .5*a*dt)*dt
     xn = x + dx
     vntemp = nan ### For a force that is velocity dependent, I don't know what to do, and this will break
-    dv = .5*(f(xn,vntemp,t+dt) + f(x,v,t))*dt  
+    dv = .5*(f(xn,vntemp,t+dt) + a)*dt  
     return (dx,dv)
 
-  def backwards(self,f,x,v,t):
-    pass
+  # I am not sure about this..
+  def backward(self,f,x,v,t):
+    #self.dt = -self.dt
+    #(dx,dy) = self.forward(f,x,v,t)
+    (dx,dy) = self.forward(f,x,v,t)
+    (dx,dy) =  (-dx,-dy)
+    #fback = lambda x,v,t: -f(x,v,t) 
+    #(dx,dy) = self.forward(fback,x,v,t)
+    return (dx,dy)
+
 
 #### Unit Testing ####
 if __name__ == '__main__':

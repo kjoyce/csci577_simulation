@@ -1,19 +1,53 @@
-from numpy import linspace
+from numpy import linspace,sqrt,mod
 from Container import Container
 class ParticleInitialize(object):
   def __init__(self):
     pass
   def __call__(self,case,c):
-    if case == 'VerletTest':
-      pass
+    dist = c.L[0] / 5.
+    vel = dist /5.
+    initialization = case
+    if initialization == 'one':
+	c.addParticle(0,dist,0,0,0,0,1)
 
+    elif initialization == 'two':
+	c.addParticle(-dist,0.,0.,vel,0.,0.,1.)
+	c.addParticle(dist,0.,0,-vel,0.,0.,1.)
+
+    elif initialization == 'three':
+	c.addParticle(0.,dist*sqrt(3)/2,0.,0.,-vel,0.,1.)
+	c.addParticle(-dist,0.,0.,vel,0.,0.,1.0)
+	c.addParticle(dist,0.,0,-vel,0.,0.,1.)
+
+    elif initialization == 'four':
+	c.addParticle(-dist,0.,0.,vel,0.,0.,1.)
+	c.addParticle(dist,0.,0,-vel,0.,0.,1.)
+	c.addParticle(0.,dist,0,0.,-vel,0.,1.)
+	c.addParticle(0.,-dist,0,0.,vel,0.,1.)
+    elif initialization == 'six':
+	c.addParticle(0.,dist,0.,0.,-vel,0.,1.)
+	c.addParticle(0.,-dist,0.,0.,vel,0.,1.)
+	c.addParticle(dist/sqrt(2),dist/sqrt(2),0,-vel/sqrt(2),-vel/sqrt(2),0.,1.)
+	c.addParticle(-dist/sqrt(2),dist/sqrt(2),0,vel/sqrt(2),-vel/sqrt(2),0.,1.)
+	c.addParticle(-dist/sqrt(2),-dist/sqrt(2),0,vel/sqrt(2),vel/sqrt(2),0.,1.)
+	c.addParticle(dist/sqrt(2),-dist/sqrt(2),0,-vel/sqrt(2),vel/sqrt(2),0.,1.)
+    elif initialization == 'eight':
+	c.addParticle(-dist,0.,0.,vel,0.,0.,1.)
+	c.addParticle(dist,0.,0,-vel,0.,0.,1.)
+	c.addParticle(0.,dist,0,0.,-vel,0.,1.)
+	c.addParticle(0.,-dist,0,0.,vel,0.,1.)
+
+	c.addParticle(dist/sqrt(2),dist/sqrt(2),0,-vel/sqrt(2),-vel/sqrt(2),0.,1.)
+	c.addParticle(-dist/sqrt(2),dist/sqrt(2),0,vel/sqrt(2),-vel/sqrt(2),0.,1.)
+	c.addParticle(-dist/sqrt(2),-dist/sqrt(2),0,vel/sqrt(2),vel/sqrt(2),0.,1.)
+	c.addParticle(dist/sqrt(2),-dist/sqrt(2),0,-vel/sqrt(2),vel/sqrt(2),0.,1.)
     elif case == 'line':
       gamma = 1e-6
       for i in range(11):
 	if i ==5:
-	  c.addParticle(c.L[0] / 2., (i-.5) * c.L[1] / 11., 1.-gamma,gamma,1.)
+	  c.addParticle(c.L[0] / 2., (i-.5) * c.L[1] / 11.,0, 1.-gamma,gamma,0,1.)
 	else:
-	  c.addParticle(c.L[0] / 2., (i-.5) * c.L[1] / 11.,1.,0.,1.) 
+	  c.addParticle(c.L[0] / 2., (i-.5) * c.L[1] / 11.,0,1.,0.,0,1.) 
 
     elif case == 'square_lattice':
       N = 8             # Particles per row
@@ -23,11 +57,12 @@ class ParticleInitialize(object):
       y = linspace(-c.L[0]/2+d/2.,c.L[0]/2-d/2,N)
       for i in range(x.size):
 	for j in range(y.size):
-	  c.addParticle(x[i],y[j],0,0,0,0,1) 
+	  c.addParticle(x[i],y[j],0,0,1) 
 
     elif case == 'triangle_lattice':
       N = 8             # particles per row
-      c.L[1] = sqrt(3) / 2. * c.L[0]  # Set this based on L[0]
+      #c.L[1] = 8
+      c.L[1] = sqrt(3) / 2. * c.L[0] -.2  # Set this based on L[0]
       d = 2.**(1/6.)        # diameter
       x =  linspace(-c.L[0]/2 + 3.*d/4.,c.L[0]/2. - 1.*d/4., N) # Unstaggered
       xs = linspace(-c.L[0]/2 + d/4.   ,c.L[0]/2. - 3.*d/4., N) # Staggered
@@ -39,4 +74,6 @@ class ParticleInitialize(object):
             c.addParticle(x[j],y[i],0,0,0,0,1)
           else:
             c.addParticle(xs[j],y[i],0,0,0,0,1)
+    else:
+      raise ValueError("Not an option")
     return c

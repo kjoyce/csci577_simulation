@@ -7,7 +7,8 @@ distance_matrix : is an instance of a DistanceMatrix.  As of now there are two i
 masses : is an array of masses for each particle
 
 IN THE FUTURE maybe add velocity_distance_matrix or velocity_array... """
-from numpy import array,vstack,sum,nan,eye
+from numpy import array,vstack,sum,nan,eye,unravel_index
+from pylab import find
 from DistanceMatrix import DistanceMatrix,PeroidicDistanceMatrix
 class LeonardJonesForce(object):
   """ optional params
@@ -15,7 +16,7 @@ class LeonardJonesForce(object):
   sigma=1 : is a parameter in the Leonard Jones force
 
   eps=1 : is a parameter related to characteristic distance in the Leonard Jones force"""
-  def __init__(self,distance_matrix,masses,sigma=1,eps=1):
+  def __init__(self,distance_matrix,masses,sigma=1.,eps=1.):
     self.sigma = sigma
     self.eps = eps
     self.distance_matrix = distance_matrix
@@ -28,16 +29,26 @@ class LeonardJonesForce(object):
 
   def get_accelerations(self,x):
     distance_matrix = self.distance_matrix
-    x = x.T  # Me and DistanceMatrices are fat, while containers are long
+    x = x.T				    # DistanceMatrices are fat, while (which this returns to) containers are long and slim
     sigma,eps,m = self.sigma,self.eps,self.masses
-    dx = distance_matrix(x)		    
-    r = sum(dx**2,axis=0)**.5
+    dx = distance_matrix(x)		    # compute distance matrix THIS IS THE MAIN TIME COMPUTATION
+    r = sum(dx**2,axis=0)**.5		    # precalculate radii
     r[eye(len(r),dtype='bool')] = nan	    # this is to avoid division by zero
-    fmatrix = 24*eps/r*(2*(sigma/r)**12 - (sigma/r)**6)*dx
-    fmatrix[:,eye(len(r),dtype='bool')] = 0 # set them back to zero
-    ans = sum(fmatrix,axis=1)/m # See comment above
-    return ans.T
-
+#    r[ r==0 ] = 1							    This is some exception handling for forces that get out of control
+    if (abs(r) < 1e-8).any():
+      idx = find(abs(r) < 1e-8)
+      err_string = "Two points within 1e-8 of eachother r = \n"
+      err_string += str(r) + "\n"
+      err_string += "\n r{} = \n".format(array(unravel_index(idx,r.shape)))
+      for x in r.ravel()[idx]:
+	err_string += "{:.12f} \n".format(float(x))
+      raise ValueError(err_string)
+    K = (2*(sigma/r)**12 - (sigma/r)**6)      # save this constant for calculation potential energy
+    fmatrix = 24*eps/r*K*dx		      # calculate force
+    fmatrix[:,eye(len(r),dtype='bool')] = 0   # set them back to zero
+    self.potential_energy = sum(4*eps*K[K>0]) # calculate potential energy
+    ans = sum(fmatrix,axis=1)/m		      # Divide by masses to get acceleration
+    return ans.T			      # See fat/slim comment
 
 #### Unit Testing ####
 if __name__ == '__main__':

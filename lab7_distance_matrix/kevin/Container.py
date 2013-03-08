@@ -32,6 +32,7 @@ class Container(object):
 
   @property
   def x(self):
+    self._x = self._x % self.L # update the coordinates with each call
     return array(self._x,dtype=self.dtype) % self.L  # Note the mod L
 
   @property
@@ -71,6 +72,7 @@ class Container(object):
   def integrate(self,dx,dv):
     self._x = self.x + dx
     self._v = self.v + dv
+#    self.kinetic_energy = 1/(len(self.x)-1)/self.dims*sum(self.masses*self.v**2,axis=0)
     
 if __name__ == '__main__':
   L = array([2,3,4])
