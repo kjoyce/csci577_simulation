@@ -14,13 +14,14 @@ class Container(object):
         xdist=(x-x.T)%xdim
         ydist=(y-y.T)%ydim
         zdist=(z-z.T)%zdim
-        xdist[xdist>xdim/2.]-=xdim
-        xdist[xdist<-xdim/2.]+=xdim
-        ydist[ydist>ydim/2.]-=ydim
-        ydist[ydist<-ydim/2.]+=ydim
-        zdist[zdist>zdim/2.]-=zdim
-        zdist[zdist<-zdim/2.]+=zdim
+        xdist[xdist>xdim/2.]=xdist[xdist>xdim/2.]-xdim
+        xdist[xdist<-xdim/2.]=xdist[xdist<-xdim/2.]+xdim
+        ydist[ydist>ydim/2.]=ydist[ydist>ydim/2.]-ydim
+        ydist[ydist<-ydim/2.]=ydist[ydist<-ydim/2.]+ydim
+        zdist[zdist>zdim/2.]=zdist[zdist>zdim/2.]-zdim
+        zdist[zdist<-zdim/2.]=zdist[zdist<-zdim/2.]+zdim
         r=sqrt(xdist**2+ydist**2+zdist**2)
+        self.xdist,self.ydist,self.zdist,self.r=xdist,ydist,zdist,r
         return xdist, ydist, zdist, r
         
     def force_I(self,component,r):
