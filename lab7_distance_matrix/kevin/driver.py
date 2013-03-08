@@ -9,16 +9,16 @@ from matplotlib import animation
 #debug_here = Tracer()
 
 ########## PARAMS ###############
-num_frames = 350
-potential_ylim = 20
+num_frames = 800
+potential_ylim = 250
 ekg_length = 25
 run_backwards = False
 delay = 1
-save_animation = True
+save_animation = False
 print_frame = False
-file_name = "line"
+file_name = "square_lattice"
 L = 10
-dims = 3
+dims = 2
 initializer = ParticleInitialize()
 c = Container(dims,10)
 c = initializer(file_name,c)
@@ -61,9 +61,9 @@ for x in c.x:
 # set up energy line
 j = 0
 t = arange(ekg_length)
-potential_dat = ones(t.shape)
-#line = (ax2.plot([],[],'b-')[0])
-line = (ax2.plot(t,potential_dat*300,'b-',animated=not(save_animation))[0])
+potential_dat = zeros(t.shape)
+#line = (ax2.plot([],[],'b-', animated=not(save_animation))[0])
+line = (ax2.plot(t,potential_dat*300,'b.',animated=not(save_animation))[0])
 
 def init():
   return tuple(circles + [line])
@@ -88,9 +88,9 @@ def next_frame(i):
     else:
       circles[i].set_facecolor("green")
   # update potential
-  potential_dat[(j%len(t))] = force.potential_energy
+  potential_dat[(j%ekg_length)] = force.potential_energy
   j = j + 1
-  line.set_data(t,potential_dat)
+  line.set_data((t+j)%ekg_length,potential_dat)
   return tuple(circles + [line])
  
 anim = animation.FuncAnimation(fig,next_frame,init_func=init,frames=num_frames,interval=delay,blit=True)
