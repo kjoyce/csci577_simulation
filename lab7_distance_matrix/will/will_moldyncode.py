@@ -55,6 +55,7 @@ class container(object):
         return Adist
         
     def force_I(self,component,r):
+        r[r==0]=nan
         mag=(24.*epsilon/r)*(2*(sigma/r)**12-(sigma/r)**6)
         f_matrix=(mag*component/r)
         f_matrix=nan_to_num(f_matrix)        
