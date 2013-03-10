@@ -1,7 +1,7 @@
 Created on Fri Mar  8 22:43:52 2013
 
 @author: will
-"""
+
 from pylab import *
 
 from matplotlib import animation
