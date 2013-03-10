@@ -16,12 +16,13 @@ class LeonardJonesForce(object):
   sigma=1 : is a parameter in the Leonard Jones force
 
   eps=1 : is a parameter related to characteristic distance in the Leonard Jones force"""
-  def __init__(self,distance_matrix,masses,sigma=1.,eps=1.):
+  def __init__(self,distance_matrix,masses,sigma=1.,eps=1.,r_tol=1e-9):
     self.sigma = sigma
     self.eps = eps
     self.distance_matrix = distance_matrix
     self.masses = masses
     self.dims = len(self.masses)
+    self.r_tol = r_tol
   
   # this has the right signature for a Verlet integrator
   def __call__(self,x,v,t):
@@ -29,14 +30,13 @@ class LeonardJonesForce(object):
 
   def get_accelerations(self,x):
     distance_matrix = self.distance_matrix
-    x = x.T				    # DistanceMatrices are fat, while (which this returns to) containers are long and slim
-    sigma,eps,m = self.sigma,self.eps,self.masses
+    sigma,eps,m,r_tol = self.sigma,self.eps,self.masses,self.r_tol
     dx = distance_matrix(x)		    # compute distance matrix THIS IS THE MAIN TIME COMPUTATION
-    r = sum(dx**2,axis=0)**.5		    # precalculate radii
+    r = sum(dx**2,axis=2)**.5		    # precalculate radii
     r[eye(len(r),dtype='bool')] = nan	    # this is to avoid division by zero
 #    r[ r==0 ] = 1							    This is some exception handling for forces that get out of control
-    if (abs(r) < 1e-8).any():
-      idx = find(abs(r) < 1e-8)
+    if (abs(r) < r_tol).any():
+      idx = find(abs(r) < r_tol)
       err_string = "Two points within 1e-8 of eachother r = \n"
       err_string += str(r) + "\n"
       err_string += "\n r{} = \n".format(array(unravel_index(idx,r.shape)))
@@ -44,9 +44,9 @@ class LeonardJonesForce(object):
 	err_string += "{:.12f} \n".format(float(x))
       raise ValueError(err_string)
     K = (2*(sigma/r)**12 - (sigma/r)**6)      # save this constant for calculation potential energy
-    fmatrix = 24*eps/r*K*dx		      # calculate force
+    fmatrix = 24*eps/r*K*dx.transpose(2,0,1)		      # calculate force
     fmatrix[:,eye(len(r),dtype='bool')] = 0   # set them back to zero
-    self.potential_energy = sum(4*eps*K[K>0]) # calculate potential energy
+    self.potential_energy = sum(4*eps*K[abs(K)>0]) # calculate potential energy
     ans = sum(fmatrix,axis=1)/m		      # Divide by masses to get acceleration
     return ans.T			      # See fat/slim comment
 
@@ -61,13 +61,13 @@ if __name__ == '__main__':
   x = array([1,2,3,4])
   y = array([3,2,1,4])
   z = array([2,3,1,4])
-  p = array([x,y,z],dtype='float64')
+  p = array([x,y,z],dtype='float64').T
   dpdt = eye(4)[:,:3]
   print "x = "
   print p
   print "dxdt = "
   print dpdt
   print "dvdt = "
-  dvdt = force.get_accelerations(p.T)
+  dvdt = force.get_accelerations(p)
   print "force((x,dxdt),0) = "
   print dvdt

@@ -19,12 +19,9 @@ class VerletIntegrator(object):
 
   # I am not sure about this..
   def backward(self,f,x,v,t):
-    #self.dt = -self.dt
-    #(dx,dy) = self.forward(f,x,v,t)
+    self.dt = -self.dt
     (dx,dy) = self.forward(f,x,v,t)
-    (dx,dy) =  (-dx,-dy)
-    #fback = lambda x,v,t: -f(x,v,t) 
-    #(dx,dy) = self.forward(fback,x,v,t)
+    self.dt = -self.dt
     return (dx,dy)
 
 

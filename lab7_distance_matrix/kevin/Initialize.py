@@ -1,9 +1,16 @@
+from Container import Container
+from Force import LeonardJonesForce
+from Integrator import VerletIntegrator
+from DistanceMatrix import PeroidicDistanceMatrix
 from numpy import linspace,sqrt,mod
 from Container import Container
 class ParticleInitialize(object):
   def __init__(self):
     pass
-  def __call__(self,case,c):
+  def __call__(self,case):
+    L = 10
+    dims = 3
+    c = Container(dims,L)
     dist = c.L[0] / 5.
     vel = dist /5.
     initialization = case
@@ -50,14 +57,15 @@ class ParticleInitialize(object):
 	  c.addParticle(c.L[0] / 2., (i-.5) * c.L[1] / 11.,0,1.,0.,0,1.) 
 
     elif case == 'square_lattice':
-      N = 8             # Particles per row
-      c.L[1] = c.L[0]       # Extents determined by L[0] input
+      N = 4             # Particles per row
+      c.L[0] = 4.4
+      c.L[1] = c.L[0]   # Extents determined by L[0] input
       d = 2.**(1/6.)    # Particle diameter
-      x = linspace(-c.L[0]/2+d/2.,c.L[0]/2-d/2,N)
-      y = linspace(-c.L[0]/2+d/2.,c.L[0]/2-d/2,N)
+      x = linspace(d/2.,c.L[0]-d/2,N)
+      y = linspace(d/2.,c.L[0]-d/2,N)
       for i in range(x.size):
 	for j in range(y.size):
-	  c.addParticle(x[i],y[j],0,0,1) 
+	  c.addParticle(x[i],y[j],0,0,0,0,1) 
 
     elif case == 'triangle_lattice':
       N = 8             # particles per row
@@ -76,4 +84,8 @@ class ParticleInitialize(object):
             c.addParticle(xs[j],y[i],0,0,0,0,1)
     else:
       raise ValueError("Not an option")
-    return c
+
+    distance_matrix = PeroidicDistanceMatrix(c.L)
+    integrate = VerletIntegrator(.01)
+    force = LeonardJonesForce(distance_matrix,c.masses)
+    return c,distance_matrix,force,integrate

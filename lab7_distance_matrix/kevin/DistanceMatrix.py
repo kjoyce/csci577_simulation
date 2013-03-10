@@ -1,6 +1,6 @@
 from numpy import array,tile,size
-from IPython.core.debugger import Tracer
-debug_here = Tracer()
+#from IPython.core.debugger import Tracer
+#debug_here = Tracer()
 
 class DistanceMatrix(object):
   def __init__(self):
@@ -8,11 +8,11 @@ class DistanceMatrix(object):
   
   def __call__(self,p):
     dp = self.all_pair_matrix(p)
-    self.dp = self.signed_distance(dp,dp.transpose((0,2,1))) # tranposes dimensions according to 0->0 1->2 2->1
+    self.dp = self.signed_distance(dp,dp.transpose((1,0,2))) # tranposes dimensions according to 0->1 1->0 2->2
     return self.dp
 
   def all_pair_matrix(self,p):
-    return  array(map(lambda x:tile(x,(size(x),1)), p)) # map the tiling to each row
+    return tile(p,(len(p),1,1))  
 
   def signed_distance(self,x,y):
     return x - y
@@ -40,8 +40,8 @@ if __name__ == '__main__':
   z = array([2,3,1,4])
   p = vstack([x,y,z])
   distance_matrix = DistanceMatrix()
-  dp = distance_matrix(p)
-  (dx,dy,dz) = dp
+  dp = distance_matrix(p.T)
+  (dx,dy,dz) = dp.T
   print "x = {}".format(x)
   print "y = {}".format(y)
   print "z = {}".format(z)
@@ -53,7 +53,7 @@ if __name__ == '__main__':
   from itertools import permutations
   x = array([x for x in permutations(range(3))])
   print "6 dimesional array \nx = \n{}".format(x)
-  dx = distance_matrix(x)
+  dx = distance_matrix(x.T)
   print "dx =\n {}".format(dx)
 
   print '--Period Boundary Conditions--'
@@ -66,9 +66,9 @@ if __name__ == '__main__':
   pdistance_matrix = PeroidicDistanceMatrix(L)
   x,y = mgrid[0:L:delta*L,0:L:delta*L]
   p = vstack((x.ravel(),y.ravel()))  
-  dp = pdistance_matrix(p)
+  dp = pdistance_matrix(p.T)
   picture = zeros((num_pts,num_pts))
-  picture[unravel_index(range(int(num_pts**2)),(num_pts,num_pts))] = dp[0,idx]**2 + dp[1,idx]**2
+  picture[unravel_index(range(int(num_pts**2)),(num_pts,num_pts))] = dp[:,idx,0]**2 + dp[:,idx,1]**2
   #plot( pt_idx[1], pt_idx[0] , 'ob', markersize=10)  # this is if you want fancy interpolation
   #imshow(picture,origin='lower',interpolation="None")
   plot( x[pt_idx], y[pt_idx] , 'ob', markersize=10)
@@ -85,8 +85,8 @@ if __name__ == '__main__':
   z = array([2,3,1,4])
   p = vstack([x,y,z])
   pdistance_matrix = PeroidicDistanceMatrix(L)
-  dp = pdistance_matrix(p)
-  (dx,dy,dz) = dp
+  dp = pdistance_matrix(p.T)
+  (dx,dy,dz) = dp.T
   print "x = {}".format(x)
   print "y = {}".format(y)
   print "z = {}".format(z)

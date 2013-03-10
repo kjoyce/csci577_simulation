@@ -1,4 +1,4 @@
-from numpy import empty,array,zeros,vstack,hstack,inf,size,repeat
+from numpy import empty,array,zeros,vstack,hstack,inf,size,repeat,sum
 from pylab import Circle,figure,gca,show
 #from IPython.core.debugger import Tracer
 #debug_here = Tracer()
@@ -16,6 +16,7 @@ class Container(object):
       self.L = repeat(L,dims)
     else:
       self.L = L
+    self.L = array(self.L,dtype=dtype)
     self._x = []  # append to this, then arrayarize.  
     self._m = []  # The @property bit makes them private
     self._v = []  # This idea came from the group Surt
@@ -72,7 +73,8 @@ class Container(object):
   def integrate(self,dx,dv):
     self._x = self.x + dx
     self._v = self.v + dv
-#    self.kinetic_energy = 1/(len(self.x)-1)/self.dims*sum(self.masses*self.v**2,axis=0)
+#    print "HERE: mass shape: {} v shape: {}".format(self.masses.shape,sum(self.v,axis=1).shape)
+    self.kinetic_energy = sum(self.masses*sum(self.v**2,axis=1)**.5,axis=0)/2
     
 if __name__ == '__main__':
   L = array([2,3,4])
