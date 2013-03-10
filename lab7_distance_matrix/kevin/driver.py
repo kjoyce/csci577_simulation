@@ -6,42 +6,27 @@ from matplotlib import animation
 
 ########## PARAMS ###############
 num_frames = 1000
-ekg_length = 50
+ekg_length = 80
 delay      = 0
 
 run_backwards  = False
 save_animation = False
 print_frame    = False
-crunch_domain  = True
+tile_domain    = True
+crunch_domain  = False
 
-### The cases with some parameters. ###
-##   one   ##
-##   two   ##
-##  three  ##
-##  four   ##
-##   six   ##
-##  eight  ##
-
-##  line   ##
-#xlim = (-5.,15.)
-#ylim = (-5.,15.)
+#case = "one"
+#case = "two"
+#case = "three"
+#case = "four"
+case = "six"
+#case = "eight"
 #case = "line"
-#energy_ylim = 400
-#
-## square_lattice ##
-#xlim = (-1,11)
-#ylim = (-1,11)
 #case = "square_lattice"
-#energy_ylim = 400
-
-# triangle_lattice ##
-xlim = (-1,11)
-ylim = (-1,11)
-case = "triangle_lattice"
-energy_ylim = 400
+#case = "triangle_lattice"
 #################################
 initializer = ParticleInitialize()
-c,distance_matrix,force,integrate = initializer(case)
+c,distance_matrix,force,integrate,xlim,ylim,energy_ylim = initializer(case)
 Linit = c.L.copy()
 file_name = case
 
@@ -74,37 +59,38 @@ def my_circle(x,y):
   e.set_alpha( alpha )
   return e
 
-## Pre initializing is necessary I guess
-#for dx in c.x:
-#  for x in arange(xlim[0]-c.L[0],xlim[1]+c.L[0],c.L[0])
-#    e = my_circle(x+dx)
-#    circles.append(ax.add_patch(e))
+def circle_iter_repeat(vec,xlim,ylim,LL):
+  """This will iterate through all possible circles within xlim + (-1,1) and ylim + (-1,1)"""
+  left   = (int(xlim[0]/LL[0])-1)*LL[0]  
+  right  = (int(xlim[1]/LL[0])+1)*LL[0]
+  bottom = (int(ylim[0]/LL[1])-1)*LL[1]  
+  top    = (int(ylim[1]/LL[1])+1)*LL[1]   
+  coords = ogrid[left:right:LL[0],bottom:top:LL[1]]
+  i = 0      
+  for x,y in nditer(coords):
+    for dx,dy in (vec[:,0:2]): 
+      yield x+dx,y+dy,i
+      i += 1
 
-# This will iterate through all possible circles within xlim + (-1,1) and ylim + (-1,1)
-def circle_iter(vec,xlim,ylim,LL):
+def circle_iter_single(vec,xlim,ylim,LL):
   for i in range(len(vec)):
     yield vec[i,0],vec[i,1],i
-#  left   = (int(xlim[0]/LL[0])-1)*LL[0]  
-#  right  = (int(xlim[1]/LL[0])+1)*LL[0]
-#  bottom = (int(ylim[0]/LL[1])-1)*LL[1]  
-#  top    = (int(ylim[1]/LL[1])+1)*LL[1]   
-#  coords = ogrid[left:right:LL[0],bottom:top:LL[1]]
-#  i = 0      
-#  for x,y in nditer(coords):
-#    for dx,dy in (vec[:,0:2]): 
-#      yield x+dx,y+dy,i
-#      i += 1
+
+if tile_domain:
+  circle_iter = circle_iter_repeat
+else:
+  circle_iter = circle_iter_single
 
 for x,y,i in circle_iter(c.x,xlim,ylim,c.L):
   e = my_circle(x,y)
   circles.append(ax.add_patch(e))
   
 print "Num Circles: {}".format(len(circles))
-# Set up energy line
+# Set up energy lines
 j = 0
 t = arange(ekg_length)
 potential_dat = zeros(t.shape)
-kinetic_dat = zeros(t.shape) #line = (ax2.plot([],[],'b-', animated=not(save_animation))[0])
+kinetic_dat = zeros(t.shape) 
 lines = []
 lines.append(ax2.plot(t,potential_dat,'b-',animated=not(save_animation))[0])
 lines.append(ax3.plot(t,kinetic_dat,'b-',animated=not(save_animation))[0])
@@ -128,8 +114,6 @@ def next_frame(i):
   c.integrate(dx,dv)
   if print_frame:
     print "Frame: {} {}".format(i,direction)
-  for x,y,i in circle_iter(c.x,xlim,ylim,Linit):
-    circles[i].center = (x,y)
   potential_dat[(j%ekg_length)] = force.potential_energy
   kinetic_dat  [(j%ekg_length)] = c.kinetic_energy
   j = j + 1
@@ -140,10 +124,10 @@ def next_frame(i):
     crunch_rate = .999
     c.L *= crunch_rate
     force.distance_matrix.L *= crunch_rate
-    print j
-    print c.L
     domain.set_width (c.L[0])
     domain.set_height(c.L[1])
+  for x,y,i in circle_iter(c.x,xlim,ylim,Linit):
+    circles[i].center = (x,y)
   return tuple(circles + lines +[a_title,domain])
  
 #next_frame(0)

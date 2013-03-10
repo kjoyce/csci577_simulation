@@ -14,6 +14,9 @@ class ParticleInitialize(object):
     dist = c.L[0] / 5.
     vel = dist /5.
     initialization = case
+    xlim = (-5.,15.)
+    ylim = (-5.,15.)
+    energy_lim = 20
     if initialization == 'one':
 	c.addParticle(0,dist,0,0,0,0,1)
 
@@ -31,6 +34,7 @@ class ParticleInitialize(object):
 	c.addParticle(dist,0.,0,-vel,0.,0.,1.)
 	c.addParticle(0.,dist,0,0.,-vel,0.,1.)
 	c.addParticle(0.,-dist,0,0.,vel,0.,1.)
+
     elif initialization == 'six':
 	c.addParticle(0.,dist,0.,0.,-vel,0.,1.)
 	c.addParticle(0.,-dist,0.,0.,vel,0.,1.)
@@ -38,7 +42,9 @@ class ParticleInitialize(object):
 	c.addParticle(-dist/sqrt(2),dist/sqrt(2),0,vel/sqrt(2),-vel/sqrt(2),0.,1.)
 	c.addParticle(-dist/sqrt(2),-dist/sqrt(2),0,vel/sqrt(2),vel/sqrt(2),0.,1.)
 	c.addParticle(dist/sqrt(2),-dist/sqrt(2),0,-vel/sqrt(2),vel/sqrt(2),0.,1.)
+	
     elif initialization == 'eight':
+	energy_lim = 80
 	c.addParticle(-dist,0.,0.,vel,0.,0.,1.)
 	c.addParticle(dist,0.,0,-vel,0.,0.,1.)
 	c.addParticle(0.,dist,0,0.,-vel,0.,1.)
@@ -50,6 +56,7 @@ class ParticleInitialize(object):
 	c.addParticle(dist/sqrt(2),-dist/sqrt(2),0,-vel/sqrt(2),vel/sqrt(2),0.,1.)
     elif case == 'line':
       gamma = 1e-6
+      energy_lim = 400
       for i in range(11):
 	if i ==5:
 	  c.addParticle(c.L[0] / 2., (i-.5) * c.L[1] / 11.,0, 1.-gamma,gamma,0,1.)
@@ -58,6 +65,9 @@ class ParticleInitialize(object):
 
     elif case == 'square_lattice':
       N = 4             # Particles per row
+      energy_lim = 400
+      xlim = (-1,5)
+      ylim = (-1,5)
       c.L[0] = 4.4
       c.L[1] = c.L[0]   # Extents determined by L[0] input
       d = 2.**(1/6.)    # Particle diameter
@@ -69,7 +79,8 @@ class ParticleInitialize(object):
 
     elif case == 'triangle_lattice':
       N = 8             # particles per row
-      #c.L[1] = 8
+      energy_lim = 400
+      c.L[1] = 8
       c.L[1] = sqrt(3) / 2. * c.L[0] -.2  # Set this based on L[0]
       d = 2.**(1/6.)        # diameter
       x =  linspace(-c.L[0]/2 + 3.*d/4.,c.L[0]/2. - 1.*d/4., N) # Unstaggered
@@ -88,4 +99,4 @@ class ParticleInitialize(object):
     distance_matrix = PeroidicDistanceMatrix(c.L)
     integrate = VerletIntegrator(.01)
     force = LeonardJonesForce(distance_matrix,c.masses)
-    return c,distance_matrix,force,integrate
+    return c,distance_matrix,force,integrate,xlim,ylim,energy_lim
