@@ -48,13 +48,19 @@ class LeonardJonesForce(object):
     K1[bad_diagonal] = 0		      # Set diagonal back to zero
     K2[bad_diagonal] = 0		      # Set diagonal back to zero
     if calc_auxilary:
+#      from IPython.core.debugger import Tracer
+#      debug_here = Tracer()
+#      debug_here()
       self.potential_energy = sum(triu(4*eps*(K1 - K2))) # Calculate potential energy
-      self.kinetic_energy = 3/2*sum(self.masses*sum(v**2,axis=1),axis=0)/2
-      press_matrix = sum(fmatrix*dx.transpose(2,0,1),axis=0) # this is the "dot product"
+      self.kinetic_energy = 3/2*sum(self.masses*sum(v**2,axis=1),axis=0)/2.
       N = dx.shape[0]
-      L = self.distance_matrix.L
-      self.pressure = (sum(triu(press_matrix))/self.dims + N/(N-1)/self.dims*self.kinetic_energy)#/prod(L)
-      print self.pressure
+      d = dx.shape[2] -1	      ######## HACKED
+      L = self.distance_matrix.L[0:1] ######## FOR FORCED 2D
+      self.pressure = 0
+      if N > 1:
+	press_matrix = sum(fmatrix*dx.transpose(2,0,1),axis=0) # this is the "dot product"
+	self.pressure = (sum(triu(press_matrix)) + N/(N-1)*self.kinetic_energy*2.)/d/prod(L)
+      #print "PE: {} KE: {} TE: {} P: {}".format(self.potential_energy,self.kinetic_energy,self.potential_energy+self.kinetic_energy,self.pressure)
     ans = sum(fmatrix,axis=1)/m		      # Divide by masses to get acceleration
     return ans.T			       
 

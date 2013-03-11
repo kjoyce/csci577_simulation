@@ -15,27 +15,40 @@ class ParticleInitialize(object):
     dist = c.L[0] / 5.
     vel = dist /5.
     initialization = case
-    xlim = (-5.,5.)
-    ylim = (-5.,5.)
+    xlim = (-5.,15.)
+    ylim = (-5.,15.)
     pot_energy_lim = (-10,30)
     kin_energy_lim = (40,70)
+    tot_energy_lim = (40,70)
     if initialization == 'one':
       c.addParticle(0,dist,0,0,0,0,1)
 
     elif initialization == 'two':
       c.addParticle(-dist,0.,0.,vel,0.,0.,1.)
       c.addParticle(dist,0.,0,-vel,0.,0.,1.)
+      pot_energy_lim = (-1,1)
+      kin_energy_lim = (-1,2)
+      tot_energy_lim = (0,2)
+      pressure_lim   = (-1,1)
 
     elif initialization == 'three':
       c.addParticle(0.,dist*sqrt(3)/2,0.,0.,-vel,0.,1.)
       c.addParticle(-dist,0.,0.,vel,0.,0.,1.0)
       c.addParticle(dist,0.,0,-vel,0.,0.,1.)
+      pot_energy_lim = (-2,1)
+      kin_energy_lim = (-1,3)
+      tot_energy_lim = (0,2)
+      pressure_lim   = (-1,1)
 
     elif initialization == 'four':
       c.addParticle(-dist,0.,0.,vel,0.,0.,1.)
       c.addParticle(dist,0.,0,-vel,0.,0.,1.)
       c.addParticle(0.,dist,0,0.,-vel,0.,1.)
       c.addParticle(0.,-dist,0,0.,vel,0.,1.)
+      pot_energy_lim = (-5,5)
+      kin_energy_lim = (-.5,10)
+      tot_energy_lim = (0,4)
+      pressure_lim   = (-4,4)
 
     elif initialization == 'six':
       energy_lim = 80
@@ -126,4 +139,4 @@ class ParticleInitialize(object):
     distance_matrix = PeroidicDistanceMatrix(c.L)
     integrate = VerletIntegrator(.01)
     force = LeonardJonesForce(distance_matrix,c.masses)
-    return c,distance_matrix,force,integrate,xlim,ylim,pot_energy_lim,kin_energy_lim
+    return c,distance_matrix,force,integrate,xlim,ylim,pot_energy_lim,kin_energy_lim,tot_energy_lim,pressure_lim

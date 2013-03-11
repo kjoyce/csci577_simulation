@@ -8,28 +8,28 @@ from matplotlib import animation
 num_frames = 1000
 ekg_length = 80
 delay      = 0
+vid_format = ".mp4"
 
 run_backwards  = False
-save_animation = False
-print_frame    = False
-tile_domain    = False
-crunch_domain  = True
+save_animation = True
+print_frame    = True
+tile_domain    = True
+crunch_domain  = False
 
 #case = "one"
 #case = "two"
 #case = "three"
-#case = "four"
+case = "four"
 #case = "six"
 #case = "eight"
 #case = "line"
 #case = "square_lattice"
-case = "triangle_lattice"
+#case = "triangle_lattice"
 #################################
 initializer = ParticleInitialize()
-c,distance_matrix,force,integrate,xlim,ylim,pot_energy_lim,kin_energy_lim = initializer(case)
+c,distance_matrix,force,integrate,xlim,ylim,pot_energy_lim,kin_energy_lim,tot_energy_lim,pressure_lim = initializer(case)
 print pot_energy_lim
 print kin_energy_lim
-tot_energy_lim = (pot_energy_lim[0]+kin_energy_lim[0],pot_energy_lim[1]+kin_energy_lim[1])
 print tot_energy_lim
 Linit = c.L.copy()
 file_name = case
@@ -40,15 +40,13 @@ fig = plt.figure(figsize=(13,6))
 ax = plt.subplot2grid((2,4),(0,0),colspan=2,rowspan=2,xlim=xlim,ylim=ylim,aspect='equal')
 a_title = ax.set_title("",animated=not(save_animation))
 ax2 = plt.subplot2grid((2,4),(0,2),title='Potential Energy',ylim=pot_energy_lim)
-ax2.grid()
-ax2.set_xticklabels([])
 ax3 = plt.subplot2grid((2,4),(1,2),title='Kinetic Energy',ylim=kin_energy_lim)
-ax3.grid()
-ax3.set_xticklabels([])
 ax4 = plt.subplot2grid((2,4),(0,3),title='Total Energy',ylim=tot_energy_lim)
-ax4.grid()
 ax5 = plt.subplot2grid((2,4),(1,3),title='Pressure',ylim=pot_energy_lim)
-ax5.grid()
+
+for a in ax2,ax3,ax4,ax5:
+  a.grid()
+  a.set_xticks([])
 fig.subplots_adjust(wspace=.4)  # this makes space between subplots
 fig.subplots_adjust(hspace=.4)  # this makes space between subplots
 
@@ -135,7 +133,6 @@ def next_frame(i):
   kinetic_dat  [(line_dir*j)%ekg_length] = force.kinetic_energy
   pressure_dat [(line_dir*j)%ekg_length] = force.pressure
   total_energy_dat = potential_dat + kinetic_dat
-#  print "PE: {}\n KE: {}\n TE: {}".format(force.potential_energy,c.kinetic_energy,force.potential_energy+c.kinetic_energy)
   j = j + 1
   lines[0].set_data(t,potential_dat    [(t+line_dir*j)%ekg_length])
   lines[1].set_data(t,kinetic_dat      [(t+line_dir*j)%ekg_length])
@@ -156,7 +153,7 @@ def next_frame(i):
 anim = animation.FuncAnimation(fig,next_frame,frames=num_frames,interval=delay,blit=True)
 
 if save_animation:
-  anim.save(file_name+".mp4",fps=45)
+  anim.save(file_name+vid_format,fps=45)
 else:
   plt.show()
 
