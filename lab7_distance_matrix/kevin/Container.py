@@ -21,6 +21,7 @@ class Container(object):
     self._m = []  # The @property bit makes them private
     self._v = []  # This idea came from the group Surt
     self.dims = dims
+    self.hot_particle = None  # Hack to color the hot one
 
   def __repr__(self):
     return_string = super(Container,self).__repr__() + "\n"

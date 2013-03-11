@@ -6,9 +6,7 @@ from numpy import linspace,sqrt,mod
 from pylab import rand,randint
 from Container import Container
 class ParticleInitialize(object):
-  def __init__(self):
-    pass
-  def __call__(self,case):
+  def __init__(self,case):
     L = 10
     dims = 3
     c = Container(dims,L)
@@ -48,7 +46,7 @@ class ParticleInitialize(object):
       pot_energy_lim = (-5,5)
       kin_energy_lim = (-.5,10)
       tot_energy_lim = (0,4)
-      pressure_lim   = (-4,4)
+      pressure_lim   = pot_energy_lim
 
     elif initialization == 'six':
       energy_lim = 80
@@ -58,6 +56,10 @@ class ParticleInitialize(object):
       c.addParticle(-dist/sqrt(2),dist/sqrt(2),0,vel/sqrt(2),-vel/sqrt(2),0.,1.)
       c.addParticle(-dist/sqrt(2),-dist/sqrt(2),0,vel/sqrt(2),vel/sqrt(2),0.,1.)
       c.addParticle(dist/sqrt(2),-dist/sqrt(2),0,-vel/sqrt(2),vel/sqrt(2),0.,1.)
+      pot_energy_lim = (-10,10)
+      kin_energy_lim = (-.5,10)
+      tot_energy_lim = (-10,10)
+      pressure_lim   = pot_energy_lim
 	
     elif initialization == 'eight':
       energy_lim = 80
@@ -70,25 +72,40 @@ class ParticleInitialize(object):
       c.addParticle(-dist/sqrt(2),dist/sqrt(2),0,vel/sqrt(2),-vel/sqrt(2),0.,1.)
       c.addParticle(-dist/sqrt(2),-dist/sqrt(2),0,vel/sqrt(2),vel/sqrt(2),0.,1.)
       c.addParticle(dist/sqrt(2),-dist/sqrt(2),0,-vel/sqrt(2),vel/sqrt(2),0.,1.)
+      pot_energy_lim = (-10,10)
+      kin_energy_lim = (-.5,10)
+      tot_energy_lim = (-10,10)
+      pressure_lim   = (-15,15)
 
     elif case == 'line':
       gamma = 1e-6
-      pot_energy_lim = (-10,30)
-      kin_energy_lim = (40,70)
+      pot_energy_lim = (-10,100)
+      kin_energy_lim = (-.5,100)
       xlim = (-5,15)
       ylim = xlim
+      tot_energy_lim = (0,100)
+      pressure_lim   = (0,30)
       for i in range(11):
 	if i ==5:
 	  c.addParticle(c.L[0] / 2., (i-.5) * c.L[1] / 11.,0, 1.-gamma,gamma,0,1.)
 	else:
 	  c.addParticle(c.L[0] / 2., (i-.5) * c.L[1] / 11.,0,1.,0.,0,1.) 
 
-    elif case == 'square_lattice':
-      N = 4             # Particles per row
-      energy_lim = 30
-      xlim = (-2,6)
+    elif case == 'square_lattice' or case == 'crunch_square_lattice':
+      N = 8             # Particles per row
+      xlim = (-1,10)
       ylim = xlim
-      c.L[0] = 4.4
+      if case == 'crunch_square_lattice':
+	pot_energy_lim = (-300,1000)
+	kin_energy_lim = (-.5,1000)
+	tot_energy_lim = (-300,1000)
+	pressure_lim   = (-200,1000)
+      else:
+	pot_energy_lim = (-300,100)
+	kin_energy_lim = (-.5,15)
+	tot_energy_lim = (-300,100)
+	pressure_lim   = (-200,100)
+      c.L[0] = 9
       c.L[1] = c.L[0]   # Extents determined by L[0] input
       d = 2.**(1/6.)    # Particle diameter
       x = linspace(d/2.,c.L[0]-d/2,N)
@@ -99,7 +116,10 @@ class ParticleInitialize(object):
     
     elif case == 'hot_square_lattice':
       N = 4             # Particles per row
-      energy_lim = 400
+      pot_energy_lim = (-300,100)
+      kin_energy_lim = (-.5,15)
+      tot_energy_lim = (-300,100)
+      pressure_lim   = (-200,100)
       xlim = (-2,6)
       ylim = xlim
       c.L[0] = 4.4
@@ -115,12 +135,21 @@ class ParticleInitialize(object):
 	  vy = (hot_idx == i*j)*rand()
 	  c.addParticle(x[i],y[j],0,vx,vy,0,1) 
       
-    elif case == 'triangle_lattice':
+    elif case == 'triangle_lattice' or case == 'crunch_triangle_lattice':
       ylim = (-1,9)
-      xlim = (-1,10)
+      xlim = (-1,11)
       N = 8             # particles per row
-      energy_lim = 400
-      c.L[1] = 8
+      if case == 'crunch_triangle_lattice':
+	pot_energy_lim = (-300,1000)
+	kin_energy_lim = (-.5,1000)
+	tot_energy_lim = (-300,1000)
+	pressure_lim   = (-200,1000)
+      else:
+	pot_energy_lim = (-300,100)
+	kin_energy_lim = (-.5,15)
+	tot_energy_lim = (-300,100)
+	pressure_lim   = (-200,100)
+      c.L[0] = 8.8
       c.L[1] = sqrt(3) / 2. * c.L[0] -.2  # Set this based on L[0]
       d = 2.**(1/6.)        # diameter
       x =  linspace(-c.L[0]/2 + 3.*d/4.,c.L[0]/2. - 1.*d/4., N) # Unstaggered
@@ -136,7 +165,17 @@ class ParticleInitialize(object):
     else:
       raise ValueError("Not an option")
 
-    distance_matrix = PeroidicDistanceMatrix(c.L)
-    integrate = VerletIntegrator(.01)
-    force = LeonardJonesForce(distance_matrix,c.masses)
-    return c,distance_matrix,force,integrate,xlim,ylim,pot_energy_lim,kin_energy_lim,tot_energy_lim,pressure_lim
+    self.distance_matrix = PeroidicDistanceMatrix(c.L)
+    self.force		 = LeonardJonesForce(self.distance_matrix,c.masses)
+    self.integrate	 = VerletIntegrator(.01,self.force)
+    self.c               = c
+    self.xlim            = xlim
+    self.ylim            = ylim
+    self.pot_energy_lim  = pot_energy_lim
+    self.kin_energy_lim  = kin_energy_lim
+    self.tot_energy_lim  = tot_energy_lim
+    self.pressure_lim    = pressure_lim
+  def __call__(self):
+    return self.c,self.distance_matrix,self.force,self.integrate,self.xlim,self.ylim,self.pot_energy_lim,self.kin_energy_lim,self.tot_energy_lim,self.pressure_lim
+
+

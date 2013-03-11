@@ -2,13 +2,15 @@ from numpy import nan
 #from IPython.core.debugger import Tracer
 #debug_here = Tracer()
 class VerletIntegrator(object):
-  def __init__(self,dt):
+  def __init__(self,dt,force):
     self.dt = dt
+    self.force = force
 
-  def __call__(self,f,x,v,t):
+  def __call__(self,x,v,t):
     return self.forward(f,x,v,t)
 
-  def forward(self,f,x,v,t):
+  def forward(self,x,v,t):
+    f = self.force
     a = f(x,v,t)
     dt = self.dt 
     dx = (v + .5*a*dt)*dt
@@ -18,7 +20,8 @@ class VerletIntegrator(object):
     return (dx,dv)
 
   # I am not sure about this..
-  def backward(self,f,x,v,t):
+  def backward(self,x,v,t):
+    f = self.force
     self.dt = -self.dt
     (dx,dy) = self.forward(f,x,v,t)
     self.dt = -self.dt

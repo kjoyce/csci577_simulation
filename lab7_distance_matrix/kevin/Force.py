@@ -60,7 +60,6 @@ class LeonardJonesForce(object):
       if N > 1:
 	press_matrix = sum(fmatrix*dx.transpose(2,0,1),axis=0) # this is the "dot product"
 	self.pressure = (sum(triu(press_matrix)) + N/(N-1)*self.kinetic_energy*2.)/d/prod(L)
-      #print "PE: {} KE: {} TE: {} P: {}".format(self.potential_energy,self.kinetic_energy,self.potential_energy+self.kinetic_energy,self.pressure)
     ans = sum(fmatrix,axis=1)/m		      # Divide by masses to get acceleration
     return ans.T			       
 
