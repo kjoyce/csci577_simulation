@@ -1,13 +1,13 @@
-Created on Fri Mar  8 22:43:52 2013
-
-@author: will
-
+#Created on Fri Mar  8 22:43:52 2013
+#
+#@author: will
+#
 from pylab import *
 
 from matplotlib import animation
-from IPython.core.debugger import Tracer
-debug_here=Tracer()
-debug_here()
+#from IPython.core.debugger import Tracer
+#debug_here=Tracer()
+#debug_here()
 
 
 epsilon=1
@@ -231,8 +231,8 @@ ax.set_aspect('equal')
 ax.set_xlim((0,c.Lx))
 ax.set_ylim((0,c.Ly))
 
-def prettify_circle(e):
-    
+def my_circle(x,y):
+    e = Circle( (x,y), radius=.5*2.**(1./6.), animated=True)
     color="lightsteelblue"
     facecolor="green"
     alpha=.6
@@ -244,25 +244,18 @@ def prettify_circle(e):
     return e
   
 for i in range(0,size(c.x)):
-    e = Circle( (c.x[i],c.y[i]), radius=.5*2.**(1./6.), animated=True)
-    e = prettify_circle(e)
+    e = my_circle(c.x[i],c.y[i])
     circles.append(ax.add_patch(e))
 
-def init():
-    
-    return circles
-
 def next_frame(i):
-#  print "Frame: {}".format(i)
+    print "Frame: {}".format(i)
     forward.verlet()
     for i in range(len(circles)):
-        e.center=(c.x[i],c.y[i])
+        circles[i].center=(c.x[i],c.y[i])
+	print e
     return circles
 
-
-anim = animation.FuncAnimation(fig,next_frame,init_func=init,\
-frames=200, interval=1, blit=True)
-
+anim = animation.FuncAnimation(fig,next_frame,frames=200,blit=True)#, interval=1, blit=True) 
 plt.show()
 
 
