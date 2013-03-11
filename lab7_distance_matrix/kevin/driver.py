@@ -12,40 +12,48 @@ delay      = 0
 run_backwards  = False
 save_animation = False
 print_frame    = False
-tile_domain    = True
-crunch_domain  = False
+tile_domain    = False
+crunch_domain  = True
 
 #case = "one"
 #case = "two"
 #case = "three"
 #case = "four"
-case = "six"
+#case = "six"
 #case = "eight"
 #case = "line"
 #case = "square_lattice"
-#case = "triangle_lattice"
+case = "triangle_lattice"
 #################################
 initializer = ParticleInitialize()
-c,distance_matrix,force,integrate,xlim,ylim,energy_ylim = initializer(case)
+c,distance_matrix,force,integrate,xlim,ylim,pot_energy_lim,kin_energy_lim = initializer(case)
+print pot_energy_lim
+print kin_energy_lim
+tot_energy_lim = (pot_energy_lim[0]+kin_energy_lim[0],pot_energy_lim[1]+kin_energy_lim[1])
+print tot_energy_lim
 Linit = c.L.copy()
 file_name = case
 
 ########### ANIMATION  ##########
 circles = []
-fig = plt.figure(figsize=(10,5))
-ax = plt.subplot2grid((2,2),(0,0),rowspan=2,xlim=xlim,ylim=ylim,aspect='equal')
+fig = plt.figure(figsize=(13,6))
+ax = plt.subplot2grid((2,4),(0,0),colspan=2,rowspan=2,xlim=xlim,ylim=ylim,aspect='equal')
 a_title = ax.set_title("",animated=not(save_animation))
-ax2 = plt.subplot2grid((2,2),(0,1),title='Potential Energy',ylim=(-energy_ylim,energy_ylim))
+ax2 = plt.subplot2grid((2,4),(0,2),title='Potential Energy',ylim=pot_energy_lim)
 ax2.grid()
 ax2.set_xticklabels([])
-ax3 = plt.subplot2grid((2,2),(1,1),title='Kinetic Energy',ylim=(-1,.1*energy_ylim))
+ax3 = plt.subplot2grid((2,4),(1,2),title='Kinetic Energy',ylim=kin_energy_lim)
 ax3.grid()
 ax3.set_xticklabels([])
+ax4 = plt.subplot2grid((2,4),(0,3),title='Total Energy',ylim=tot_energy_lim)
+ax4.grid()
+ax5 = plt.subplot2grid((2,4),(1,3),title='Pressure',ylim=pot_energy_lim)
+ax5.grid()
 fig.subplots_adjust(wspace=.4)  # this makes space between subplots
 fig.subplots_adjust(hspace=.4)  # this makes space between subplots
 
 # Plot a square around the primary calculation domain
-domain = ax.add_patch(Rectangle((0,0),c.L[0],c.L[1], fc="none", alpha=.6, ec="tomato",animated=True))
+domain = ax.add_patch(Rectangle((0,0),c.L[0],c.L[1], fc="none", alpha=.6, ec="lightsteelblue",animated=True))
 
 def my_circle(x,y):
   e = Circle( (x,y), radius=2**(-.5/.6), animated=not(save_animation), clip_on=True)
@@ -89,11 +97,15 @@ print "Num Circles: {}".format(len(circles))
 # Set up energy lines
 j = 0
 t = arange(ekg_length)
-potential_dat = zeros(t.shape)
-kinetic_dat = zeros(t.shape) 
+potential_dat    = zeros(t.shape)
+kinetic_dat      = zeros(t.shape) 
+total_energy_dat = zeros(t.shape) 
+pressure_dat     = zeros(t.shape) 
 lines = []
 lines.append(ax2.plot(t,potential_dat,'b-',animated=not(save_animation))[0])
 lines.append(ax3.plot(t,kinetic_dat,'b-',animated=not(save_animation))[0])
+lines.append(ax4.plot(t,total_energy_dat,'b-',animated=not(save_animation))[0])
+lines.append(ax5.plot(t,pressure_dat,'b-',animated=not(save_animation))[0])
 
 def next_frame(i):
   global j
@@ -108,17 +120,27 @@ def next_frame(i):
   if start_backwards:
     for e in circles:
       e.set_facecolor("red")
+    for l in lines:
+      l.set_color("red")
   if i == 0:
     for e in circles:
       e.set_facecolor("green")
+    for l in lines:
+      l.set_color("green")
   c.integrate(dx,dv)
   if print_frame:
     print "Frame: {} {}".format(i,direction)
-  potential_dat[(j%ekg_length)] = force.potential_energy
-  kinetic_dat  [(j%ekg_length)] = c.kinetic_energy
+  line_dir = (-1)**backwards
+  potential_dat[(line_dir*j)%ekg_length] = force.potential_energy
+  kinetic_dat  [(line_dir*j)%ekg_length] = force.kinetic_energy
+  pressure_dat [(line_dir*j)%ekg_length] = force.pressure
+  total_energy_dat = potential_dat + kinetic_dat
+#  print "PE: {}\n KE: {}\n TE: {}".format(force.potential_energy,c.kinetic_energy,force.potential_energy+c.kinetic_energy)
   j = j + 1
-  lines[0].set_data(t,potential_dat[(t+j)%ekg_length])
-  lines[1].set_data(t,kinetic_dat  [(t+j)%ekg_length])
+  lines[0].set_data(t,potential_dat    [(t+line_dir*j)%ekg_length])
+  lines[1].set_data(t,kinetic_dat      [(t+line_dir*j)%ekg_length])
+  lines[2].set_data(t,total_energy_dat [(t+line_dir*j)%ekg_length])
+  lines[3].set_data(t,pressure_dat     [(t+line_dir*j)%ekg_length])
   a_title.set_text("Frame: {}".format(j))
   if crunch_domain:
     crunch_rate = .999
