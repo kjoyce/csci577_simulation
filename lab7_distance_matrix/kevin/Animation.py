@@ -112,15 +112,15 @@ class Container_Animation(object):
 
   def _animate_frame(self,i):
     self.j += 1
-    run_backwards,num_frames,integrate,force,domain,circles,c,j,crunch_domain,xlim,ylim,Linit = self.run_backwards,self.num_frames,self.integrate,self.force,self.domain,self.circles,self.c,self.j,self.crunch_domain,self.xlim,self.ylim,self.Linit
+    run_backwards,num_frames,integrate,force,domain,circles,c,j,crunch_domain,xlim,ylim,Linit,lines = self.run_backwards,self.num_frames,self.integrate,self.force,self.domain,self.circles,self.c,self.j,self.crunch_domain,self.xlim,self.ylim,self.Linit,self.lines
     backwards = run_backwards and i > num_frames/2
     start_backwards = i == int(num_frames/2) and run_backwards
     if backwards:
       direction = "backward"
-      (dx,dv) = integrate.backward(c.x,c.v,i)
+      c.etargetni()
     else: 
       direction = "forward"
-      (dx,dv) = integrate.forward(c.x,c.v,i)
+      c.integrate()
     if start_backwards:
       for e in circles:
 	e.set_facecolor("red")
@@ -131,10 +131,9 @@ class Container_Animation(object):
 	e.set_facecolor("green")
       for l in self.lines:
 	l.set_color("green")
-    c.integrate(dx,dv)
     self._update_lines(backwards)
     self.title.set_text("Frame: {}".format(j))
-    if crunch_domain and not(i%20):
+    if crunch_domain and not(j%20):
       crunch_rate = .995
       c.L *= crunch_rate
       force.distance_matrix.L *= crunch_rate
@@ -147,7 +146,7 @@ class Container_Animation(object):
     for x,y,i in circle_iter(c.x,xlim,ylim,Linit):
       circles[i].center = (x,y)
     if self.print_frame:
-      print "Frame: {} {}".format(i,direction)
+      print "Frame: {} {} {}".format(j,direction,num_frames)
       print "PE: {} KE: {} TE: {} P: {}".format(force.potential_energy,force.kinetic_energy,force.potential_energy+force.kinetic_energy,force.pressure)
     return tuple(circles + self.lines +[self.title,domain])
 

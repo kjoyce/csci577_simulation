@@ -8,8 +8,12 @@ from Container import Container
 class ParticleInitialize(object):
   def __init__(self,case):
     L = 10
-    dims = 3
-    c = Container(dims,L)
+    dims = 2
+    self.distance_matrix = PeroidicDistanceMatrix(L)
+    self.force		 = LeonardJonesForce(dims,self.distance_matrix)
+    self.integrate	 = VerletIntegrator(.01,self.force)
+    self.c		 = Container(self.integrate)
+    c = self.c
     dist = c.L[0] / 5.
     vel = dist /5.
     initialization = case
@@ -18,31 +22,32 @@ class ParticleInitialize(object):
     pot_energy_lim = (-10,30)
     kin_energy_lim = (40,70)
     tot_energy_lim = (40,70)
+
     if initialization == 'one':
-      c.addParticle(0,dist,0,0,0,0,1)
+      c.addParticle(0,dist,0,0,1)
 
     elif initialization == 'two':
-      c.addParticle(-dist,0.,0.,vel,0.,0.,1.)
-      c.addParticle(dist,0.,0,-vel,0.,0.,1.)
+      c.addParticle(-dist,0.,vel,0.,1.)
+      c.addParticle(dist,0.,-vel,0.,1.)
       pot_energy_lim = (-1,1)
       kin_energy_lim = (-1,2)
       tot_energy_lim = (0,2)
       pressure_lim   = (-1,1)
 
     elif initialization == 'three':
-      c.addParticle(0.,dist*sqrt(3)/2,0.,0.,-vel,0.,1.)
-      c.addParticle(-dist,0.,0.,vel,0.,0.,1.0)
-      c.addParticle(dist,0.,0,-vel,0.,0.,1.)
+      c.addParticle(0.,dist*sqrt(3)/2.,0.,-vel,1.)
+      c.addParticle(-dist,0.,vel,0.,1.0)
+      c.addParticle(dist,0.,-vel,0.,1.)
       pot_energy_lim = (-2,1)
       kin_energy_lim = (-1,3)
       tot_energy_lim = (0,2)
       pressure_lim   = (-1,1)
 
     elif initialization == 'four':
-      c.addParticle(-dist,0.,0.,vel,0.,0.,1.)
-      c.addParticle(dist,0.,0,-vel,0.,0.,1.)
-      c.addParticle(0.,dist,0,0.,-vel,0.,1.)
-      c.addParticle(0.,-dist,0,0.,vel,0.,1.)
+      c.addParticle(-dist,0.,vel,0.,1.)
+      c.addParticle(dist,0.-vel,0.,1.)
+      c.addParticle(0.,dist,0.,-vel,1.)
+      c.addParticle(0.,-dist,0.,vel,1.)
       pot_energy_lim = (-5,5)
       kin_energy_lim = (-.5,10)
       tot_energy_lim = (0,4)
@@ -50,12 +55,12 @@ class ParticleInitialize(object):
 
     elif initialization == 'six':
       energy_lim = 80
-      c.addParticle(0.,dist,0.,0.,-vel,0.,1.)
-      c.addParticle(0.,-dist,0.,0.,vel,0.,1.)
+      c.addParticle(0.,dist,0.,-vel,1.)
+      c.addParticle(0.,-dist,0.,vel,1.)
       c.addParticle(dist/sqrt(2),dist/sqrt(2),0,-vel/sqrt(2),-vel/sqrt(2),0.,1.)
-      c.addParticle(-dist/sqrt(2),dist/sqrt(2),0,vel/sqrt(2),-vel/sqrt(2),0.,1.)
-      c.addParticle(-dist/sqrt(2),-dist/sqrt(2),0,vel/sqrt(2),vel/sqrt(2),0.,1.)
-      c.addParticle(dist/sqrt(2),-dist/sqrt(2),0,-vel/sqrt(2),vel/sqrt(2),0.,1.)
+      c.addParticle(-dist/sqrt(2),dist/sqrt(2),vel/sqrt(2),-vel/sqrt(2),1.)
+      c.addParticle(-dist/sqrt(2),-dist/sqrt(2),vel/sqrt(2),vel/sqrt(2),1.)
+      c.addParticle(dist/sqrt(2),-dist/sqrt(2),-vel/sqrt(2),vel/sqrt(2),0.,1.)
       pot_energy_lim = (-10,10)
       kin_energy_lim = (-.5,10)
       tot_energy_lim = (-10,10)
@@ -63,15 +68,15 @@ class ParticleInitialize(object):
 	
     elif initialization == 'eight':
       energy_lim = 80
-      c.addParticle(-dist,0.,0.,vel,0.,0.,1.)
-      c.addParticle(dist,0.,0,-vel,0.,0.,1.)
-      c.addParticle(0.,dist,0,0.,-vel,0.,1.)
-      c.addParticle(0.,-dist,0,0.,vel,0.,1.)
+      c.addParticle(-dist,0.,vel,0.,1.)
+      c.addParticle(dist,0,-vel,0.,1.)
+      c.addParticle(0.,dist,0.,-vel,1.)
+      c.addParticle(0.,-dist,0.,vel,1.)
 
-      c.addParticle(dist/sqrt(2),dist/sqrt(2),0,-vel/sqrt(2),-vel/sqrt(2),0.,1.)
-      c.addParticle(-dist/sqrt(2),dist/sqrt(2),0,vel/sqrt(2),-vel/sqrt(2),0.,1.)
-      c.addParticle(-dist/sqrt(2),-dist/sqrt(2),0,vel/sqrt(2),vel/sqrt(2),0.,1.)
-      c.addParticle(dist/sqrt(2),-dist/sqrt(2),0,-vel/sqrt(2),vel/sqrt(2),0.,1.)
+      c.addParticle(dist/sqrt(2),dist/sqrt(2),-vel/sqrt(2),-vel/sqrt(2),1.)
+      c.addParticle(-dist/sqrt(2),dist/sqrt(2),vel/sqrt(2),-vel/sqrt(2),1.)
+      c.addParticle(-dist/sqrt(2),-dist/sqrt(2),vel/sqrt(2),vel/sqrt(2),1.)
+      c.addParticle(dist/sqrt(2),-dist/sqrt(2),-vel/sqrt(2),vel/sqrt(2),1.)
       pot_energy_lim = (-10,10)
       kin_energy_lim = (-.5,10)
       tot_energy_lim = (-10,10)
@@ -87,9 +92,9 @@ class ParticleInitialize(object):
       pressure_lim   = (0,30)
       for i in range(11):
 	if i ==5:
-	  c.addParticle(c.L[0] / 2., (i-.5) * c.L[1] / 11.,0, 1.-gamma,gamma,0,1.)
+	  c.addParticle(c.L[0]/2.,(i-.5)*c.L[1]/11.,1.-gamma,gamma,1.)
 	else:
-	  c.addParticle(c.L[0] / 2., (i-.5) * c.L[1] / 11.,0,1.,0.,0,1.) 
+	  c.addParticle(c.L[0]/2.,(i-.5)*c.L[1]/11.,1.,0.,1.) 
 
     elif case == 'square_lattice' or case == 'crunch_square_lattice':
       N = 8             # Particles per row
@@ -112,7 +117,7 @@ class ParticleInitialize(object):
       y = linspace(d/2.,c.L[0]-d/2,N)
       for i in range(x.size):
 	for j in range(y.size):
-	  c.addParticle(x[i],y[j],0,0,0,0,1) 
+	  c.addParticle(x[i],y[j],0,0,1) 
     
     elif case == 'hot_square_lattice':
       N = 4             # Particles per row
@@ -159,16 +164,12 @@ class ParticleInitialize(object):
       for i in range(N):
         for j in range(N):
           if mod(i,2)==0:
-            c.addParticle(x[j],y[i],0,0,0,0,1)
+            c.addParticle(x[j],y[i],0,0,1)
           else:
             c.addParticle(xs[j],y[i],0,0,0,0,1)
     else:
       raise ValueError("Not an option")
 
-    self.distance_matrix = PeroidicDistanceMatrix(c.L)
-    self.force		 = LeonardJonesForce(self.distance_matrix,c.masses)
-    self.integrate	 = VerletIntegrator(.01,self.force)
-    self.c               = c
     self.xlim            = xlim
     self.ylim            = ylim
     self.pot_energy_lim  = pot_energy_lim

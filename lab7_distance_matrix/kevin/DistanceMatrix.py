@@ -1,26 +1,26 @@
-from numpy import array,tile,size
+from numpy import array,tile,size,inf
 #from IPython.core.debugger import Tracer
 #debug_here = Tracer()
-
 class DistanceMatrix(object):
   def __init__(self):
-    pass
-  
+    self._L = inf
   def __call__(self,p):
     dp = self.all_pair_matrix(p)
     self.dp = self.signed_distance(dp,dp.transpose((1,0,2))) # tranposes dimensions according to 0->1 1->0 2->2
     return self.dp
-
   def all_pair_matrix(self,p):
     return tile(p,(len(p),1,1))  
-
   def signed_distance(self,x,y):
     return x - y
+  @property
+  def L(self):
+    return self._L
+  def updateL(self,newL):
+    self._L = newL
 
 class PeroidicDistanceMatrix(DistanceMatrix):
   def __init__(self,L):
-    self.L = L
-
+    self.updateL(L)
   # Think hard about why this works.  This is the map (x,y) -> d
   # where d is the one dimensional toroidal distance. It is
   # essentialy one phase (y dimension) of a ''flat'' sine wave (x
