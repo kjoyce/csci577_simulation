@@ -1,15 +1,15 @@
 from Animation import Container_Animation
 from Initialize import ParticleInitialize
 ########## PARAMS ###############
-num_frames = 100
+num_frames = 1000
 ekg_length = 80
 delay      = 0
 vid_format = ".mp4"
 
-run_backwards  = True
+run_backwards  = False
 save_animation = False
 print_frame    = False
-tile_domain    = True
+tile_domain    = False
 crunch_domain  = False
 
 #case = "one"
@@ -18,8 +18,8 @@ crunch_domain  = False
 #case = "four"
 #case = "six"
 #case = "eight"
-case = "line"
-#case = "square_lattice"
+#case = "line"
+case = "square_lattice"
 #case = "crunch_square_lattice"
 #case = "triangle_lattice"
 #case = "crunch_triangle_lattice"

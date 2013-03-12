@@ -110,8 +110,7 @@ class ParticleInitialize(object):
 	kin_energy_lim = (-.5,15)
 	tot_energy_lim = (-300,100)
 	pressure_lim   = (-200,100)
-      c.L[0] = 9
-      c.L[1] = c.L[0]   # Extents determined by L[0] input
+      c.updateL(9)
       d = 2.**(1/6.)    # Particle diameter
       x = linspace(d/2.,c.L[0]-d/2,N)
       y = linspace(d/2.,c.L[0]-d/2,N)
