@@ -38,8 +38,6 @@ class Container_Animation(object):
       e = self.make_circle(x,y)
       self.circles.append(self.axes[0].add_patch(e))
 
-
-
   def _set_axes(self,xlim,ylim,pot_energy_lim,kin_energy_lim,tot_energy_lim,pressure_lim):
     axes = []
     axes.append(plt.subplot2grid((2,4),(0,0),colspan=2,rowspan=2,xlim=xlim,ylim=ylim,aspect='equal'))
@@ -135,8 +133,7 @@ class Container_Animation(object):
     self.title.set_text("Frame: {}".format(j))
     if crunch_domain and not(j%20):
       crunch_rate = .995
-      c.L *= crunch_rate
-      force.distance_matrix.L *= crunch_rate
+      c.updateL(c.L*crunch_rate)
       domain.set_width (c.L[0])
       domain.set_height(c.L[1])
     if self.tile_domain:
@@ -145,6 +142,8 @@ class Container_Animation(object):
       circle_iter = self.circle_iter_single
     for x,y,i in circle_iter(c.x,xlim,ylim,Linit):
       circles[i].center = (x,y)
+      if i == c.hot_idx:  # this is a dirty hack that doesn't work when the domain is tiled
+	circles[i].set_facecolor("red")
     if self.print_frame:
       print "Frame: {} {} {}".format(j,direction,num_frames)
       print "PE: {} KE: {} TE: {} P: {}".format(force.potential_energy,force.kinetic_energy,force.potential_energy+force.kinetic_energy,force.pressure)

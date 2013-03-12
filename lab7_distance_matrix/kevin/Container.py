@@ -18,7 +18,7 @@ class Container(object):
     self._v = []  # This idea came from the group Surt
     self.t = 0
     self.dims = integrator.force.dims
-    self.hot_particle = None  # Hack to color the hot one
+    self.hot_idx = None  # Hack to color the hot one
     self.integrator = integrator
     
   def __repr__(self):

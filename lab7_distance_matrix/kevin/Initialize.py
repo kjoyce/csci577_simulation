@@ -9,9 +9,10 @@ class ParticleInitialize(object):
   def __init__(self,case):
     L = 10
     dims = 2
+    dt = .01
     self.distance_matrix = PeroidicDistanceMatrix(L)
     self.force		 = LeonardJonesForce(dims,self.distance_matrix)
-    self.integrate	 = VerletIntegrator(.01,self.force)
+    self.integrate	 = VerletIntegrator(dt,self.force)
     self.c		 = Container(self.integrate)
     c = self.c
     dist = c.L[0] / 5.
@@ -86,7 +87,7 @@ class ParticleInitialize(object):
       gamma = 1e-6
       pot_energy_lim = (-10,100)
       kin_energy_lim = (-.5,100)
-      xlim = (-5,15)
+      xlim = (-1,11)
       ylim = xlim
       tot_energy_lim = (0,100)
       pressure_lim   = (0,30)
@@ -96,7 +97,10 @@ class ParticleInitialize(object):
 	else:
 	  c.addParticle(c.L[0]/2.,(i-.5)*c.L[1]/11.,1.,0.,1.) 
 
-    elif case == 'square_lattice' or case == 'crunch_square_lattice':
+      
+    elif case == 'square_lattice' or case == 'crunch_square_lattice' or case == 'hot_square_lattice':
+      if case == 'hot_square_lattice':
+	c.hot_idx = randint(64)
       N = 8             # Particles per row
       xlim = (-1,10)
       ylim = xlim
@@ -116,29 +120,13 @@ class ParticleInitialize(object):
       y = linspace(d/2.,c.L[0]-d/2,N)
       for i in range(x.size):
 	for j in range(y.size):
-	  c.addParticle(x[i],y[j],0,0,1) 
+	  if i*8 + j == c.hot_idx:
+	    (vx,vy) = (rand(),rand())
+	    print "(vx,vy) = ({},{}) at ({},{})".format(vx,vy,i,j)
+	    c.addParticle(x[i],y[j],vx,vy,1) 
+	  else:
+	    c.addParticle(x[i],y[j],0,0,1) 
     
-    elif case == 'hot_square_lattice':
-      N = 4             # Particles per row
-      pot_energy_lim = (-300,100)
-      kin_energy_lim = (-.5,15)
-      tot_energy_lim = (-300,100)
-      pressure_lim   = (-200,100)
-      xlim = (-2,6)
-      ylim = xlim
-      c.L[0] = 4.4
-      c.L[1] = c.L[0]   # Extents determined by L[0] input
-      d = 2.**(1/6.)    # Particle diameter
-      x = linspace(d/2.,c.L[0]-d/2,N)
-      y = linspace(d/2.,c.L[0]-d/2,N)
-      k = 0
-      hot_idx = randint(N**2)
-      for i in range(x.size):
-	for j in range(y.size):
-	  vx = (hot_idx == i*j)*rand()
-	  vy = (hot_idx == i*j)*rand()
-	  c.addParticle(x[i],y[j],0,vx,vy,0,1) 
-      
     elif case == 'triangle_lattice' or case == 'crunch_triangle_lattice':
       ylim = (-1,9)
       xlim = (-1,11)
