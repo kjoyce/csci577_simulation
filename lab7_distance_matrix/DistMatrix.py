@@ -1,4 +1,3 @@
-
 from numpy import array,size,tile
 #from IPython.core.debugger import Tracer
 
@@ -17,14 +16,13 @@ class DistMatrix(object):
 
     def UpdatePBoundries(self, vector, domain):
         xupdateBoundries = vector
-        xupdateBoundries[xupdateBoundries > domain] -= domain
-        xupdateBoundries[xupdateBoundries < 0] += domain
+        xupdateBoundries % domain
         return xupdateBoundries
-    
+
     def CheckDist(self, distMatrix, domain):
         checkDist = distMatrix
-        checkDist[checkDist > domain/2.] -= domain
-        checkDist[checkDist < -domain/2.] += domain
+        checkDist[checkDist > domain/2.] %= domain
+        checkDist[checkDist < -domain/2.] %= domain
         return checkDist
 
 matrix = DistMatrix()
