@@ -76,3 +76,6 @@ nosetests.xml
 
 # Trashed files
 */trash/*
+
+# pickle dumps
+*.dump

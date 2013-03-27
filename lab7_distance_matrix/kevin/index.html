@@ -62,33 +62,29 @@ Some simulations are run backwards and are indicated by color (red).
   <source src="line.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video><br />
-Note how there is lots of potential energy to start and then as they diffuse it levels off.
+Note that pressure and potential energy start very high, and then drop and convert to kinetic energy (and thus heat) when the structure breaks down.
 
 <h2>square_lattice</h2> 
 <video width="700" height="300" controls>
   <source src="square_lattice.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video><br />
+Note that with no perturbations, the steady state persists, but breaks down after about 900 time steps (integrator set to dt = .01) likely due to numerical precision error.
+
+<h2>Square Lattice with Hot Particle</h2>
+<video width="700" height="300" controls>
+  <source src="hot_square_lattice.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video><br />
+The instability of this orbit is highlighted by a small perterbation in a randomly selected particle. Note that the particles naturally seek a triangular lattice state.
 
 <h2>triangle_lattice</h2> 
 <video width="700" height="300" controls>
   <source src="triangle_lattice.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video><br />
+The boundary here is 8.8 and making it a little tight.  This adds osciliation to the system, and illustrates the stability of this configuration. 
 
-The boundary here is 8.8 and making it a little tight makes a fairly stable state. 
-
-<h2>Square Lattice with Hot Particle</h2>
-<video width="700" height="300" controls>
-  <source src="hot_square.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video><br />
-
-<h2>Triangle Lattice with Hot Particle</h2>
-<video width="700" height="300" controls>
-  <source src="hot_triangle.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video><br />
 
 <h2>Square Lattice with Crunching</h2>
 <video width="700" height="300" controls>
@@ -101,5 +97,6 @@ The boundary here is 8.8 and making it a little tight makes a fairly stable stat
   <source src="crunch_triangle_lattice.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video><br />
+In both of the crunching simulations, we note that total energy and pressure increase as expected.  A "phase transition" is observed at about time step 400 (dt = .01).  I am not sure if this is an artefact of the integrator or that they really are moving as rapidly as indicated.
 
 </body></html>
