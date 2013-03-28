@@ -1,4 +1,4 @@
-from numpy import array,tile,size,inf
+from numpy import array,tile,size,inf,sum,eye,nan
 #from IPython.core.debugger import Tracer
 #debug_here = Tracer()
 class DistanceMatrix(object):
@@ -17,6 +17,27 @@ class DistanceMatrix(object):
     return self._L
   def updateL(self,newL):
     self._L = newL
+  def radii(self,dx):
+    """ This returns r the absolute distance with nan's in the diagonal"""
+    r = sum(dx**2,axis=2)**.5		# precalculate radii
+    bad_diagonal = eye(len(r),dtype='bool')
+    r[bad_diagonal] = nan		# this is to avoid division by zero
+    return r
+    
+class OptimizedDistanceMatrix(DistanceMatrix):
+  def __init__(self):
+    pass
+
+from scipy.sparse import csc_matrix
+class SparseVectors(object):
+  def __init__(self,array_of_matrices):
+    self._matrices = []
+    for m in array_of_matrices:
+	self.matrices.append(csc_matrix(m)) 
+    self._matrices = array(m,dtype=float)
+
+    
+    
 
 class PeroidicDistanceMatrix(DistanceMatrix):
   def __init__(self,L):

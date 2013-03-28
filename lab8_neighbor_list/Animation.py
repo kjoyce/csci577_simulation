@@ -1,9 +1,9 @@
 from numpy import linspace,zeros,arange,ones,ogrid,nditer,floor,ceil
-from pylab import plt
-from matplotlib import animation
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 class Container_Animation(object):
-  def __init__(self,container,integrate,force,xlim,ylim,pot_energy_lim,
-	       kin_energy_lim,tot_energy_lim,pressure_lim,
+  def __init__(self,container,integrate,force,xlim,ylim,
+	       pull_force_lim,ave_vel_lim,
 	       num_frames=1000,ekg_length=80,delay=0,
 	       save_animation=False,run_backwards=False,
 	       print_frame=False,tile_domain=False,
@@ -13,7 +13,7 @@ class Container_Animation(object):
     self.integrate = integrate
     self.force = force
     self.circles = []
-    self.axes = self._set_axes(xlim,ylim,pot_energy_lim,kin_energy_lim,tot_energy_lim,pressure_lim)
+    self.axes = self._set_axes(xlim,ylim,pull_force_lim,ave_vel_lim)
     self.ekg_length = ekg_length
     self.save_animation = save_animation
     self.lines = self._set_lines()
@@ -40,15 +40,13 @@ class Container_Animation(object):
     self.j = 0
     self.filename = filename
     self.vid_format = vid_format
-    self.anim = animation.FuncAnimation(self.fig,self._animate_frame,frames=self.num_frames,interval=self.delay,blit=True)
+    self.anim = animation.FuncAnimation(self.fig,self._animate_frame,frames=self.num_frames,blit=True)
 
-  def _set_axes(self,xlim,ylim,pot_energy_lim,kin_energy_lim,tot_energy_lim,pressure_lim):
+  def _set_axes(self,xlim,ylim,pull_force_lim,ave_vel_lim):
     axes = []
-    axes.append(plt.subplot2grid((2,4),(0,0),colspan=2,rowspan=2,xlim=xlim,ylim=ylim,aspect='equal'))
-    axes.append(plt.subplot2grid((2,4),(0,2),title='Potential Energy',ylim=pot_energy_lim))
-    axes.append(plt.subplot2grid((2,4),(1,2),title='Kinetic Energy',ylim=kin_energy_lim))
-    axes.append(plt.subplot2grid((2,4),(0,3),title='Total Energy',ylim=tot_energy_lim))
-    axes.append(plt.subplot2grid((2,4),(1,3),title='Pressure',ylim=pressure_lim))
+    axes.append(plt.subplot2grid((2,3),(0,0),colspan=2,rowspan=2,xlim=xlim,ylim=ylim,aspect='equal'))
+    axes.append(plt.subplot2grid((2,3),(0,2),title='Pulling Force',ylim=pull_force_lim))
+    axes.append(plt.subplot2grid((2,3),(1,2),title='Average Velocity',ylim=ave_vel_lim))
     for a in axes[1:]:
       a.grid()
       a.set_xticks([])
@@ -58,17 +56,14 @@ class Container_Animation(object):
     ekg_length = self.ekg_length
     t = arange(ekg_length)
     self.t = t
-    self.potential_dat    = zeros(t.shape)
-    self.kinetic_dat      = zeros(t.shape) 
-    self.total_energy_dat = zeros(t.shape) 
-    self.pressure_dat     = zeros(t.shape) 
+    self.pull_force_dat    = zeros(t.shape)
+    self.ave_vel_dat       = zeros(t.shape) 
     lines = []
     axes = self.axes
     save_animation = self.save_animation
-    lines.append(axes[1].plot(t,self.potential_dat,'b-',animated=not(save_animation))[0])
-    lines.append(axes[2].plot(t,self.kinetic_dat,'b-',animated=not(save_animation))[0])
-    lines.append(axes[3].plot(t,self.total_energy_dat,'b-',animated=not(save_animation))[0])
-    lines.append(axes[4].plot(t,self.pressure_dat,'b-',animated=not(save_animation))[0])
+    lines.append(axes[1].plot(t,self.pull_force_dat,'b-',animated=not(save_animation))[0])
+    lines.append(axes[2].plot(t,self.ave_vel_dat,'b-',animated=not(save_animation))[0])
+#    lines.append(axes[0].plot([],[],'-',lw=2,animated=not(save_animation))[0])
     return lines
     
   def circle_iter_repeat(self,vec,xlim,ylim,LL):
@@ -100,17 +95,14 @@ class Container_Animation(object):
     return e
 
   def _update_lines(self,backwards):
-    lines,ekg_length,force,j,potential_dat,kinetic_dat,pressure_dat,t = self.lines,self.ekg_length,self.force,self.j,self.potential_dat,self.kinetic_dat,self.pressure_dat,self.t
+    lines,ekg_length,force,j,pull_force_dat,ave_vel_dat,t = self.lines,self.ekg_length,self.force,self.j,self.pull_force_dat,self.ave_vel_dat,self.t
     line_dir = (-1)**backwards
-    potential_dat[(line_dir*j)%ekg_length] = force.potential_energy
-    kinetic_dat  [(line_dir*j)%ekg_length] = force.kinetic_energy
-    pressure_dat [(line_dir*j)%ekg_length] = force.pressure
-    total_energy_dat = potential_dat + kinetic_dat
+    pull_force_dat[(line_dir*j)%ekg_length] = force.pull_force[-1]
+    ave_vel_dat[(line_dir*j)%ekg_length] = self.c.avg_sled_velocity
     j = j + 1
-    lines[0].set_data(t,potential_dat    [(t+line_dir*j)%ekg_length])
-    lines[1].set_data(t,kinetic_dat      [(t+line_dir*j)%ekg_length])
-    lines[2].set_data(t,total_energy_dat [(t+line_dir*j)%ekg_length])
-    lines[3].set_data(t,pressure_dat     [(t+line_dir*j)%ekg_length])
+    lines[0].set_data(t,pull_force_dat[(t+line_dir*j)%ekg_length])
+    lines[1].set_data(t,ave_vel_dat   [(t+line_dir*j)%ekg_length])
+#    lines[2].set_data([self.c.x[-1,0],self.c.t*.1+self.force.xinit],[self.c.x[-1,1],1])
 
   def _animate_frame(self,i):
     self.j += 1
