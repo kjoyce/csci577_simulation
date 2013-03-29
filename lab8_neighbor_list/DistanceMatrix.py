@@ -1,4 +1,5 @@
-from numpy import array,tile,size,inf,sum,eye,nan
+from numpy import array,tile,size,inf,sum,eye,nan,ndarray
+import numpy as np
 #from IPython.core.debugger import Tracer
 #debug_here = Tracer()
 class DistanceMatrix(object):
@@ -24,20 +25,12 @@ class DistanceMatrix(object):
     r[bad_diagonal] = nan		# this is to avoid division by zero
     return r
     
-class OptimizedDistanceMatrix(DistanceMatrix):
-  def __init__(self):
-    pass
-
-from scipy.sparse import csc_matrix
-class SparseVectors(object):
-  def __init__(self,array_of_matrices):
-    self._matrices = []
-    for m in array_of_matrices:
-	self.matrices.append(csc_matrix(m)) 
-    self._matrices = array(m,dtype=float)
-
-    
-    
+class OptimizedDistanceMatrix(ndarray):
+  def __new__(cls,x,sparse_signature):
+    obj = np.asarray(x).view(cls)
+    return obj
+  def __array_finalize__(self, obj):
+    if obj is None: return
 
 class PeroidicDistanceMatrix(DistanceMatrix):
   def __init__(self,L):
@@ -55,62 +48,72 @@ class PeroidicDistanceMatrix(DistanceMatrix):
 if __name__ == '__main__':
   from numpy import size,vstack,mgrid,zeros,unravel_index
   from matplotlib.pyplot import *
-  print '--Testing--'
-  x = array([1,2,3,4])
-  y = array([3,2,1,4])
-  z = array([2,3,1,4])
-  p = vstack([x,y,z])
-  distance_matrix = DistanceMatrix()
-  dp = distance_matrix(p.T)
-  (dx,dy,dz) = dp.T
-  print "x = {}".format(x)
-  print "y = {}".format(y)
-  print "z = {}".format(z)
-  print "dx = \n{}".format(dx)
-  print "dy = \n{}".format(dy)
-  print "dz = \n{}".format(dz)
-
-  print '--Now for something crazy--'
-  from itertools import permutations
-  x = array([x for x in permutations(range(3))])
-  print "6 dimesional array \nx = \n{}".format(x)
-  dx = distance_matrix(x.T)
-  print "dx =\n {}".format(dx)
-
-  print '--Period Boundary Conditions--'
-  L = 1.
-  num_pts = 20.
-  pt_idx = (int(.15*num_pts),int(.30*num_pts))
-
-  delta = num_pts**-1
-  idx = pt_idx[0]*num_pts + pt_idx[1]  # C style raveling
-  pdistance_matrix = PeroidicDistanceMatrix(L)
-  x,y = mgrid[0:L:delta*L,0:L:delta*L]
-  p = vstack((x.ravel(),y.ravel()))  
-  dp = pdistance_matrix(p.T)
-  picture = zeros((num_pts,num_pts))
-  picture[unravel_index(range(int(num_pts**2)),(num_pts,num_pts))] = dp[:,idx,0]**2 + dp[:,idx,1]**2
-  #plot( pt_idx[1], pt_idx[0] , 'ob', markersize=10)  # this is if you want fancy interpolation
-  #imshow(picture,origin='lower',interpolation="None")
-  plot( x[pt_idx], y[pt_idx] , 'ob', markersize=10)
-  contourf(x,y,picture)
-  colorbar()
-  title("Domain: $[0.0,{}]$, Distance from $({},{})$".format(L,x[pt_idx],y[pt_idx]))
-
-  show()
-
-  L = 5.
-  print "L = {}".format(L)
-  x = array([1,2,3,4])
-  y = array([3,2,1,4])
-  z = array([2,3,1,4])
-  p = vstack([x,y,z])
-  pdistance_matrix = PeroidicDistanceMatrix(L)
-  dp = pdistance_matrix(p.T)
-  (dx,dy,dz) = dp.T
-  print "x = {}".format(x)
-  print "y = {}".format(y)
-  print "z = {}".format(z)
-  print "dx = \n{}".format(dx)
-  print "dy = \n{}".format(dy)
-  print "dz = \n{}".format(dz)
+#  print '--Testing--'
+#  x = array([1,2,3,4])
+#  y = array([3,2,1,4])
+#  z = array([2,3,1,4])
+#  p = vstack([x,y,z])
+#  distance_matrix = DistanceMatrix()
+#  dp = distance_matrix(p.T)
+#  (dx,dy,dz) = dp.T
+#  print "x = {}".format(x)
+#  print "y = {}".format(y)
+#  print "z = {}".format(z)
+#  print "dx = \n{}".format(dx)
+#  print "dy = \n{}".format(dy)
+#  print "dz = \n{}".format(dz)
+#
+#  print '--Now for something crazy--'
+#  from itertools import permutations
+#  x = array([x for x in permutations(range(3))])
+#  print "6 dimesional array \nx = \n{}".format(x)
+#  dx = distance_matrix(x.T)
+#  print "dx =\n {}".format(dx)
+#
+#  print '--Period Boundary Conditions--'
+#  L = 1.
+#  num_pts = 20.
+#  pt_idx = (int(.15*num_pts),int(.30*num_pts))
+#
+#  delta = num_pts**-1
+#  idx = pt_idx[0]*num_pts + pt_idx[1]  # C style raveling
+#  pdistance_matrix = PeroidicDistanceMatrix(L)
+#  x,y = mgrid[0:L:delta*L,0:L:delta*L]
+#  p = vstack((x.ravel(),y.ravel()))  
+#  dp = pdistance_matrix(p.T)
+#  picture = zeros((num_pts,num_pts))
+#  picture[unravel_index(range(int(num_pts**2)),(num_pts,num_pts))] = dp[:,idx,0]**2 + dp[:,idx,1]**2
+#  #plot( pt_idx[1], pt_idx[0] , 'ob', markersize=10)  # this is if you want fancy interpolation
+#  #imshow(picture,origin='lower',interpolation="None")
+#  plot( x[pt_idx], y[pt_idx] , 'ob', markersize=10)
+#  contourf(x,y,picture)
+#  colorbar()
+#  title("Domain: $[0.0,{}]$, Distance from $({},{})$".format(L,x[pt_idx],y[pt_idx]))
+#
+#  show()
+#
+#  L = 5.
+#  print "L = {}".format(L)
+#  x = array([1,2,3,4])
+#  y = array([3,2,1,4])
+#  z = array([2,3,1,4])
+#  p = vstack([x,y,z])
+#  pdistance_matrix = PeroidicDistanceMatrix(L)
+#  dp = pdistance_matrix(p.T)
+#  (dx,dy,dz) = dp.T
+#  print "x = {}".format(x)
+#  print "y = {}".format(y)
+#  print "z = {}".format(z)
+#  print "dx = \n{}".format(dx)
+#  print "dy = \n{}".format(dy)
+#  print "dz = \n{}".format(dz)
+  from scipy.sparse import csc_matrix
+  from pylab import rand
+  N = 100
+  tol = .01
+  x = rand(N)
+  dx = tile(x,(N,1))
+  dx = dx.T - dx
+  dx[abs(dx) > tol] = 0
+  dx = csc_matrix(dx)
+  print repr(dx)
