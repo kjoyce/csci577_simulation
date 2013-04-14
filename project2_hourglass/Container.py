@@ -11,25 +11,15 @@ class Container(object):
       dims : is the number of dimensions
       L : If the container has periodic boundary conditions, then L
       is a numpy array of lengths. """
-  def __init__(self,integrator,n_sled,n_floor,dtype='float64'):
-    self.dtype = dtype   # if things get too slow change this
+  def __init__(self,integrator,start_move_idx):
+    self.dtype = 'float64'   # if things get too slow change this
     self._x = []  # append to this, then arrayarize.  
     self._m = []  # The @property bit makes them private
     self._v = []  # This idea came from the group Surt
-    self._avg_velocities = []
     self.t = 0
     self.dims = integrator.force.dims
-    self.hot_idx = None  # Hack to color the hot one
     self.integrator = integrator
-    self.drag_corner_idx = n_floor
-    self.pull_corner_idx = n_floor + n_sled
-
-  @property
-  def avg_sled_velocity(self):
-    v = self.v[self.drag_corner_idx:]
-    avg_vel = sum((v[:,0]**2 + v[:,1]**2)**.5)
-    #print "avg velocity = {}".format(avg_vel)
-    return avg_vel
+    self.start_move_idx = start_move_idx
     
   def __repr__(self):
     return_string = super(Container,self).__repr__() + "\n"
@@ -43,7 +33,7 @@ class Container(object):
   @property
   def x(self):
     #self._x = self._x % self.L # update the coordinates with each call
-    return array(self._x,dtype=self.dtype) % self.L  # Note the mod L
+    return array(self._x,dtype=self.dtype) # % self.L  # Note the mod L
 
   @property
   def v(self):
@@ -57,18 +47,11 @@ class Container(object):
   def L(self):
     return self.integrator.L
 
-  @property
-  def avg_velocities(self):
-    return array(self._avg_velocities)
-
-  @property
-  def pull_force(self):
-    return self.integrator.force.pull_force
-
   def updateL(self,newL):
     return self.integrator.updateL(newL)
-  def append_m(self,m):
-    return self.integrator.force.append_m(m)
+
+#  def append_m(self,m):
+#    return self.integrator.force.append_m(m)
 
   def addParticle(self,*args):
     """ Adds a particle to the container and is overloaded in two
@@ -87,22 +70,21 @@ class Container(object):
     if len(args) == 3: 
       self._x.append(args[0])
       self._v.append(args[1])
-      self.append_m(args[2])
+#      self.append_m(args[2])
     elif len(args)%2 and len(args)>1: # This must be odd
       dim = len(args)/2
       self._x.append(args[0:dim])
       self._v.append(args[dim:-1])
-      self.append_m(args[-1])
+#      self.append_m(args[-1])
     else:
       raise ValueError('must pass odd numer of args greater than 2')
 
   def integrate(self):
     self.t += self.integrator.dt
     (dx,dv) = self.integrator(self.x,self.v,self.t)
-    move_from = self.drag_corner_idx
+    move_from = self.start_move_idx
     self._x[move_from:] = (self.x + dx)[move_from:]
     self._v[move_from:] = (self.v + dv)[move_from:]
-    self._avg_velocities.append(self.avg_sled_velocity)
 
   def etargetni(self):
     (dx,dv) = self.integrator.backward(self.x,self.v,self.t)

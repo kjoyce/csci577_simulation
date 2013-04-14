@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 class Container_Animation(object):
   def __init__(self,container,integrate,force,xlim,ylim,
-	       pull_force_lim,ave_vel_lim,
-	       num_frames=1000,ekg_length=80,delay=0,
+	       pull_force_lim=[-5,5],ave_vel_lim=[-5,5],
+	       num_frames=1000,ekg_length=80,delay=1,
 	       save_animation=False,run_backwards=False,
 	       print_frame=False,tile_domain=False,
 	       crunch_domain=False,vid_format="mp4",filename="out"):
-    self.fig = plt.figure(figsize=(13,6))
+    self.fig = plt.figure()
     self.c = container
     self.integrate = integrate
     self.force = force
@@ -44,12 +44,15 @@ class Container_Animation(object):
 
   def _set_axes(self,xlim,ylim,pull_force_lim,ave_vel_lim):
     axes = []
-    axes.append(plt.subplot2grid((2,3),(0,0),colspan=2,rowspan=2,xlim=xlim,ylim=ylim,aspect='equal'))
-    axes.append(plt.subplot2grid((2,3),(0,2),title='Pulling Force',ylim=pull_force_lim))
-    axes.append(plt.subplot2grid((2,3),(1,2),title='Average Velocity',ylim=ave_vel_lim))
-    for a in axes[1:]:
-      a.grid()
-      a.set_xticks([])
+    axes.append(plt.gca())
+    axes[0].set_xlim(xlim)
+    axes[0].set_ylim(ylim)
+#    axes.append(plt.subplot2grid((2,3),(0,0),colspan=2,rowspan=2,xlim=xlim,ylim=ylim,aspect='equal'))
+#    axes.append(plt.subplot2grid((2,3),(0,2),title='Pulling Force',ylim=pull_force_lim))
+#    axes.append(plt.subplot2grid((2,3),(1,2),title='Average Velocity',ylim=ave_vel_lim))
+#    for a in axes[1:]:
+#      a.grid()
+#      a.set_xticks([])
     return axes
 
   def _set_lines(self):
@@ -61,8 +64,8 @@ class Container_Animation(object):
     lines = []
     axes = self.axes
     save_animation = self.save_animation
-    lines.append(axes[1].plot(t,self.pull_force_dat,'b-',animated=not(save_animation))[0])
-    lines.append(axes[2].plot(t,self.ave_vel_dat,'b-',animated=not(save_animation))[0])
+    #lines.append(axes[1].plot(t,self.pull_force_dat,'b-',animated=not(save_animation))[0])
+    #lines.append(axes[2].plot(t,self.ave_vel_dat,'b-',animated=not(save_animation))[0])
 #    lines.append(axes[0].plot([],[],'-',lw=2,animated=not(save_animation))[0])
     return lines
     
@@ -106,43 +109,15 @@ class Container_Animation(object):
 
   def _animate_frame(self,i):
     self.j += 1
-    run_backwards,num_frames,integrate,force,domain,circles,c,j,crunch_domain,xlim,ylim,Linit,lines = self.run_backwards,self.num_frames,self.integrate,self.force,self.domain,self.circles,self.c,self.j,self.crunch_domain,self.xlim,self.ylim,self.Linit,self.lines
-    backwards = run_backwards and i > num_frames/2
-    start_backwards = i == int(num_frames/2) and run_backwards
-    if backwards:
-      direction = "backward"
-      c.etargetni()
-    else: 
-      direction = "forward"
-      c.integrate()
-    if start_backwards:
-      for e in circles:
-	e.set_facecolor("red")
-      for l in lines:
-	l.set_color("red")
-    if i == 0:
-      for e in circles:
-	e.set_facecolor("green")
-      for l in self.lines:
-	l.set_color("green")
-    self._update_lines(backwards)
-    self.title.set_text("Frame: {}".format(j))
-    if crunch_domain and not(j%20):
-      crunch_rate = .995
-      c.updateL(c.L*crunch_rate)
-      domain.set_width (c.L[0])
-      domain.set_height(c.L[1])
-    if self.tile_domain:
-      circle_iter = self.circle_iter_repeat
-    else:
-      circle_iter = self.circle_iter_single
+    num_frames,integrate,force,circles,c,j,xlim,ylim,Linit,lines,domain = self.num_frames,self.integrate,self.force,self.circles,self.c,self.j,self.xlim,self.ylim,self.Linit,self.lines,self.domain
+    c.integrate()
+#    self._update_lines(backwards)
+#    self.title.set_text("Frame: {}".format(j))
+    circle_iter = self.circle_iter_single
     for x,y,i in circle_iter(c.x,xlim,ylim,Linit):
       circles[i].center = (x,y)
-      if i == c.hot_idx:  # this is a dirty hack that doesn't work when the domain is tiled
-	circles[i].set_facecolor("red")
     if self.print_frame:
-      print "Frame: {} {} {}".format(j,direction,num_frames)
-      print "PE: {} KE: {} TE: {} P: {}".format(force.potential_energy,force.kinetic_energy,force.potential_energy+force.kinetic_energy,force.pressure)
+      print "Frame: {} {}".format(j,num_frames)
     return tuple(circles + self.lines +[self.title,domain])
 
   def show(self):
