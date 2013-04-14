@@ -203,7 +203,7 @@ class GranularForces(object):
             yacl[particle] += sum(dampingForcey)/masses[particle]
             yacl[particle] += wall1AclY
             yacl[particle] += wall2AclY
-            xacl[particle] += wall3AclY
+            yacl[particle] += wall3AclY
             zacl[particle] = sum(array((magnitude * ma.divide(distz,distr)).filled(0.)))/masses[particle]
             zacl[particle] += sum(dampingForcex)/masses[particle]
             yacl[particle] += -2.

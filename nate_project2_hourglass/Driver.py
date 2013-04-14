@@ -136,6 +136,8 @@ if animate == True:
     ax.set_aspect('equal')
     ax.set_xlim((0,container.Lx))
     ax.set_ylim((0,container.Ly))
+    ax.plot([0,10/sqrt(3)],[20,10],'b-')
+    ax.plot([17/sqrt(3),27/sqrt(3)],[10,20],'b-')
     
     def prettify_circle(e):
       color="lightsteelblue"
@@ -167,11 +169,11 @@ if animate == True:
           if count%neighborUpdateInterval == 0:
               setNeighbors.UpdateNeighbors(container, cutOff)
           integrator(force,container)
-      #debug_here()
       for i in range(len(circles)):
         circles[i].center = (container.xpos[i], container.ypos[i])
       return circles
     
+      #debug_here()
     anim = animation.FuncAnimation(fig,next_frame,init_func=init,
                                    frames=num_frames, fargs=(data,count), interval=1
                                    ,blit=True)
