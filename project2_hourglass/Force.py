@@ -11,25 +11,26 @@ class HourGlassForce(object):
   
   def __call__(self,x,v,t,calc_auxilary=True,sparse_signature=None):
     if sparse_signature is None:
-      dp = tile(x,(len(x),1,1))
-      dp = dp.transpose((1,0,2)) - dp
-      dx = dp.T[0]
-      dy = dp.T[1]
+      dx,dy   = self.dense_dmatrix(x)
+      dvx,dvy = self.dense_dmatrix(v)
       dr = (dx**2 + dy**2)**.5
       sparse_structure = (dr < 2.**(1./6.))*(dr > 0)
       sparse_signature = csc_matrix(sparse_structure)
-      dx = csc_matrix((dx[sparse_signature.nonzero()],sparse_signature.indices,sparse_signature.indptr))
-      dy = csc_matrix((dy[sparse_signature.nonzero()],sparse_signature.indices,sparse_signature.indptr))
-      dr = csc_matrix((dr[sparse_signature.nonzero()],sparse_signature.indices,sparse_signature.indptr))
+      sparcify = lambda dx: csc_matrix((dx[sparse_signature.nonzero()],sparse_signature.indices,sparse_signature.indptr))
+      (dx,dy,dr,dvx,dvy) =  map(sparcify, (dx,dy,dr,dvx,dvy))
     else:
-      y = x.T[1]
-      x = x.T[0]
-      dx = self.sparse_tile(x,sparse_signature)
-      dy = self.sparse_tile(y,sparse_signature)
+      update = lambda x: self.sparse_tile(x,sparse_signature)
+      (dx,dy,dvx,dvy) = map(update, (x.T[0],x.T[1],v.T[0],v.T[1]))
       dr = (dx**2 + dy**2)**.5
 
     lj_force = self.lennard_jones_force(dx,dy,dr)
+    ds_force = self.dissipation_force(dx,dy,dr,dvx,dvy)
     return (lj_force).T,sparse_signature
+
+  @classmethod
+  def dense_dmatrix(cls,p):
+    dp = tile(x,(len(x),1,1))
+    return (dp.transpose((1,0,2)) - dp).T
 
   @classmethod
   def sparse_tile(cls,x_new,sp_dx):
@@ -45,10 +46,15 @@ class HourGlassForce(object):
     K2 = K1**2
     fxmatrix.data = 24./dr.data*(2*K1 - K2)*dx.data   
     fymatrix.data = 24./dr.data*(2*K1 - K2)*dy.data   
-    return array(sum(fxmatrix.data),sum(fymatrix.data))
+    return array(vstack([fxmatrix.sum(0),fymatrix.sum(0)]))
 
-  def dissipation_force(self,dvx,dvy,dr,gamma=20):
-    pass
+  def dissipation_force(self,dx,dy,dr,dvx,dvy,gamma=20):
+    fxmatrix = dr.copy()  # we assume that dx,dy, and r have same sparcity
+    fymatrix = dr.copy()
+    dot_prod = (dvx.data*dx.data + dvy.data*dx.data)
+    fxmatrix.data = -gamma*dot_prod*dx.data/dr.data**2
+    fymatrix.data = -gamma*dot_prod*dy.data/dr.data**2
+    return array(vstack([fxmatrix.sum(0),fymatrix.sum(0)]))
 
   @property
   def L(self):
