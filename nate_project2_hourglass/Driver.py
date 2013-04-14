@@ -187,17 +187,18 @@ else:
 	if not(idx is None):
 	  bridge_height_estimate = hstack((bridge_height_estimate, 10+idx) )
 	if i % 100 == 0 and i > 100:
-	  figure()
+	  figure(figsize=(9,5))
 	  subplot(121)
 	  plot(range(10,20),xslice_acc)
-	  title("Average Horizontal Acceleration vs. Height ")
+	  title("Average Hor. Acceleration vs. Height ")
 	  xlabel("Height")
 	  ylabel("Average X-Acceleration")
 	  subplot(122)
 	  plot(range(10,20),yslice_acc)
-	  title("Average Vertical Acceleration vs. Height ")
+	  title("Average Ver. Acceleration vs. Height ")
 	  xlabel("Height")
 	  ylabel("Average Y-Acceleration")
+	  subplots_adjust(wspace=.4)  # Note this makes space
 	  savefig("component_slice_forces_{}.pdf".format(i))
 
     figure()
