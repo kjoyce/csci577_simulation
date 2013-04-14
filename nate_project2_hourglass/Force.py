@@ -213,5 +213,5 @@ class GranularForces(object):
         #yacl[0:(self.c.floorSize+2*self.c.wallSize+2*self.c.slantSize)] = 0.
         
         zacl *= 0.
-        print self.c.particleFlux[self.c.integrationIteration]
+        #print self.c.particleFlux[self.c.integrationIteration]
         return xacl, yacl, zacl
