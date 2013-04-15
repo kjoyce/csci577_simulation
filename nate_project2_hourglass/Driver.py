@@ -41,7 +41,7 @@ slantStart = 20.
 slantDegree = pi/3.1
 slantMultiplierX = 2*rad*cos(slantDegree)
 slantMultiplierY = 2*rad*sin(slantDegree)
-gamma = 30
+gamma = 20
 
 num_rows = 6
 
@@ -49,7 +49,7 @@ container = Container(floorSize,wallSize,slantSize,Lx,Ly)
 dist = container.Lx / 5.
 vel = dist /5.
 animate = False
-iterationTimed = 1200
+iterationTimed = 1450
 cutOff = 1.*(2*rad)
 #########################
 """
@@ -136,7 +136,7 @@ if animate == True:
       return e
     
     for i in range(container.numParticles):
-      e = Circle( (container.xpos[i],container.ypos[i]), radius=rad, animated = True)
+      e = Circle( (container.xpos[i],container.ypos[i]), radius=rad)#, animated = True)
       e = prettify_circle(e)
       circles.append(ax.add_patch(e))
     def init():
@@ -155,24 +155,26 @@ if animate == True:
           if count%neighborUpdateInterval == 0:
               setNeighbors.UpdateNeighbors(container, cutOff)
           integrator(force,container)
+	  if count % 200 == 0:
+	    title("Frame: {}".format(count))
+	    savefig("hourglass_{}.pdf".format(count))
       for i in range(len(circles)):
         circles[i].center = (container.xpos[i], container.ypos[i])
       return circles
     
       #debug_here()
     anim = animation.FuncAnimation(fig,next_frame,init_func=init,
-                                   frames=num_frames,interval=1
-                                   ,blit=True)
+                                   frames=num_frames,interval=1)
+#                                   ,blit=True)
     
     plt.show()
 
 else:
-    bridge_height_estimate = array([])
+    bridge_height_estimate = zeros((iterationTimed,10))
     for i in range(iterationTimed):    
         #if i%neighborUpdateInterval == 0:
 	setNeighbors.UpdateNeighbors(container,cutOff)
         integrator(force,container)
-	print "frame: {}".format(i)
 	xslice_acc = []
 	yslice_acc = []
 	for h in range(10,20):
@@ -183,28 +185,52 @@ else:
 	yslice_acc = array(yslice_acc)
 	xslice_acc[isnan(xslice_acc)] = 0
 	yslice_acc[isnan(yslice_acc)] = 0
-	idx = find(yslice_acc > 0)
-	if not(idx is None):
-	  bridge_height_estimate = hstack((bridge_height_estimate, 10+idx) )
+	bridge_height_estimate[i] = yslice_acc 
 	if i % 100 == 0 and i > 100:
-	  figure(figsize=(9,5))
+	  print "frame: {}".format(i)
+	  f = figure(figsize=(9,5))
 	  subplot(121)
 	  plot(range(10,20),xslice_acc)
 	  title("Average Hor. Acceleration vs. Height ")
 	  xlabel("Height")
 	  ylabel("Average X-Acceleration")
+	  ylim(-5,15)
 	  subplot(122)
 	  plot(range(10,20),yslice_acc)
 	  title("Average Ver. Acceleration vs. Height ")
 	  xlabel("Height")
 	  ylabel("Average Y-Acceleration")
 	  subplots_adjust(wspace=.4)  # Note this makes space
+	  ylim(-5,15)
 	  savefig("component_slice_forces_{}.pdf".format(i))
 
     figure()
     plot(container.particleFlux)
+    ylim(-1,5)
+    title("Granular Flow Rate") 
+    xlabel("Time")
+    ylabel("Particle Flux through $y=8$ to $y=10$") 
+    savefig("particle_flux.pdf")
 
-    figure()
-    hist(bridge_height_estimate,bins=8)
+    import pickle
+    f = open('yaccel.dump','w')
+    pickle.dump([bridge_height_estimate,container.particleFlux],f)
+    f.close()
+# After unpickeling
+#In [105]: contourf(arange(1450),arange(10,20),tot_yaccel.T) 
+#Out[105]: <matplotlib.contour.QuadContourSet instance at 0xbb2d20c>
+#
+#In [106]: colorbar() 
+#Out[106]: <matplotlib.colorbar.Colorbar instance at 0xbc7058c>
+#
+#In [107]: title("Avg. Vertical of Force as Various Heights") 
+#Out[107]: <matplotlib.text.Text at 0xb741a8c>
+#
+#In [108]: ylabel("Height") 
+#Out[108]: <matplotlib.text.Text at 0xbd2d3cc>
+#
+#In [109]: xlabel("Time") 
+#Out[109]: <matplotlib.text.Text at 0xba5388c>
+#
+#In [110]: savefig("jam_show.pdf") 
 
-        

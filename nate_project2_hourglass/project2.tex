@@ -1,0 +1,179 @@
+\documentclass[12pt]{amsart}
+\usepackage[margin=1in]{geometry}
+%\usepackage{tikz}
+%\usetikzlibrary{calc}
+\usepackage{amsmath, amsthm, amssymb, graphicx, setspace}
+\usepackage{mymacros}
+\usepackage{pysyntax}
+\usepackage{verbatim}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\newcommand{\kry}{\mathcal K}
+\newcommand{\figref}[1]{\figurename~\ref{#1}}
+
+\title{Hourglass Effect in Granular Materials}
+\author{Kevin Joyce}
+\date{15 April 2013} 
+
+\begin{document}
+\maketitle
+\section{Introduction}
+
+The unique physics of granular material flow is distinct from the standard models of 
+fluid flow \cite{bell}, and many proposed models are well suited to numerical
+simulation. One particularly unique feature that is not captured by standard
+fluid models is the so-called ``Hourglass'' effect of granular flow.  That is,
+the rate of flow of a granular material through a narrow passage is roughly
+constant, independent of the magnitude of the force pushing the material
+through. Hence, in the case of an actual hourglass, the amount of sand at the
+bottom would be proportional passage of time since the beginning of the flow.
+
+In this paper, we present a simple model that demonstrates this phenomenon in
+two dimensions.  We also give a simple explanation for this in terms of
+per-particle forces.  We also discuss some specific computational difficulties 
+and methods for overcoming them, as well as further applications and improvements.
+
+\section{Methods and Verification} 
+This implementation used the \texttt{SciPy} and \texttt{NumPy} \cite{scipy} libraries within the \texttt{Python} programming language.
+
+Our implementation models the granular material as an ensemble of two-dimensional spheres subject to a constant downward gravitational force. The pair-wise interaction between the spheres is governed by a repulsive electrical force (Lennard-Jones) proportional to
+\begin{equation}
+  \vect f^{e}_{ij} = -\left(\frac{1}{\|\vect r_{ij}\|}\right)^{12}\widehat{\vect r_{ij}},
+  \label{ljforce}
+\end{equation}
+and rotation and non-conservative shearing is approximated by
+\begin{equation}
+  \vect f^{d}_{ij} = \gamma\, proj_{\vect r_{ij}}(\vect v_{ij}) \, \widehat{\vect r_{ij}}, 
+  \label{dforce}
+\end{equation}
+where $\vect r_{ij}$ is the vector from sphere $i$ to sphere $j$, $\vect
+v_{ij}$ is the signed difference of the vector velocities,  $proj_{\vect
+r_{ij}}(\vect v_{ij})$ is the component of $\vect v_{ij}$ in the direction of
+$\vect r_{ij}$ given by $\widehat{\vect r_{ij}} \cdot \vect v_{ij}$, and hats
+indicate normalization. Equation \eqref{dforce} can be thought of as a
+first-order approximation the cumulative effect of rotation and
+non-conservative shearing modeled by dissipation proportional to velocity.
+This is similar to viscous damping.  The parameter $\gamma$ must be selectively
+chosen according to the number of particles so that $\vect f^{d}_{ij}$ does not
+``over-damp'' and send particles off to infinity.  More accurate models that
+derive the rotational and shearing forces are described and implemented in
+\cite{cundle} and \cite{bell}.
+
+The walls of the hourglass are modeled by a per-particle Lennard-Jones
+electrical force proportional to 
+\begin{equation}
+  \vect f^w_i = \left(\frac{1}{\|\vect {rw}_{i}\|}\right)^{12}\widehat{ \vect {rw}_i }
+\label{wforce}
+\end{equation}
+where $\vect{rw}_{i}$ is the distance from sphere $i$ to the wall. This
+distance is calculated in the standard way by minimizing the point-wise
+distance for each point on the wall.  In the case of straight line $ax + by +
+c=0$, this is given by 
+$$
+  \|\vect{rw}_i \| = \frac{|ax + by +c|}{\sqrt{a^2 + b^2}}.
+$$
+and $\widehat{\vect{rw}_i}$ points perpendicular to the slope of the line.
+That is $a\vect i + b\vect j$ normalized.  Each sphere-sphere and line-sphere
+force is only calculated when their respective distances are with in Lennard
+Jones radius of $2^{1/6}$.  Note that under this constraint, the geometry of
+the system dictates that the average interaction is much less than a full pair
+by pair comparison.  This reduces the pair-wise force calculations from
+$O\left(N^2\right)$ to $O(N)$ ($N$ spheres).  A similar argument reduces 
+the sphere-wall force calculation.  This can be implemented via a sparse
+matrix or list of neighbors data type.
+
+\begin{figure}[h]
+\includegraphics[width=.6\textwidth]{particle_flux.pdf}
+\caption{ This plot gives the flux of particles through the horizontal slice between $y=8$ and $y=10$. } 
+\label{flux}
+\end{figure}
+
+Animations of the simulation provide verification of the model and a rubric for
+choosing $\gamma$.  We also estimate the flow out of the hour glass calculating
+the vertical flux of particles just below the opening.  This is shown in
+\figref{flux} and provides evidence of the constant flow phenomenon being
+correctly modelled by our simulation.
+
+\section{Results and Analysis }
+\begin{figure}[h]
+\begin{subfigure}{.4\textwidth}
+\includegraphics[width=\textwidth,height=.14\textheight]{hourglass_200.pdf}
+\includegraphics[width=\textwidth,height=.14\textheight]{hourglass_400.pdf}
+\includegraphics[width=\textwidth,height=.14\textheight]{hourglass_600.pdf}
+\includegraphics[width=\textwidth,height=.14\textheight]{hourglass_800.pdf}
+\includegraphics[width=\textwidth,height=.14\textheight]{hourglass_1000.pdf}
+\includegraphics[width=\textwidth,height=.14\textheight]{hourglass_1200.pdf}
+\includegraphics[width=\textwidth,height=.14\textheight]{hourglass_1400.pdf}
+\end{subfigure}
+\begin{subfigure}{.55\textwidth}
+\includegraphics[width=\textwidth,height=.14\textheight]{component_slice_forces_200.pdf}
+\includegraphics[width=\textwidth,height=.14\textheight]{component_slice_forces_400.pdf}
+\includegraphics[width=\textwidth,height=.14\textheight]{component_slice_forces_600.pdf}
+\includegraphics[width=\textwidth,height=.14\textheight]{component_slice_forces_800.pdf}
+\includegraphics[width=\textwidth,height=.14\textheight]{component_slice_forces_1000.pdf}
+\includegraphics[width=\textwidth,height=.14\textheight]{component_slice_forces_1200.pdf}
+\includegraphics[width=\textwidth,height=.14\textheight]{component_slice_forces_1400.pdf}
+\end{subfigure}
+\caption{ This matrix of plots gives a screen shot of the animation at various
+time points to the left of the average (at a given height) accelerations of the
+particles component-wise. }
+\label{animation}
+\end{figure}
+
+Snapshots of the animation along side the components of force averaged
+per-sphere horizontally at various heights of the hourglass are given in
+\figref{animation}.  Note the spikes of horizontal-component force (column 2)
+occur at nearly the same height with large net positive spikes of
+vertical-component force (column 3).  This suggests that the force due to
+gravity of the granular material above heights where the spikes occur is
+countered by a network of forces from sphere to sphere just above the opening
+that results in a cumulative upward force.  This upward force  accounts for
+``jamming'' of the particles just above those nearest to the opening.
+Perturbations break the jamming but another jam is quickly reformed.  This is
+indicated in \figref{jam}.  This figure indicates the magnitude of the average
+vertical component at various heights at each time step.  Note the spikes
+indicating jams followed soon after by negative vertical force indicating a jam break.
+Note also that the largest magnitude upward force is generally at $y=10$ and $y=11$,
+indicating that particles just at the opening are free to fall.  That is, all 
+of the force due to gravity above the lightly colored regions is \emph{not} transferred
+to just at the opening below the lightly colored regions. 
+\begin{figure}[h]
+\includegraphics[width=.7\textwidth]{jam_show.pdf}
+\caption{ Average vertical component of force over horizontal cross-sections of the hourglass at each integration step. }
+\label{jam}
+\end{figure}
+\section{Conclusion}
+
+%Our simulation agrees with the results in \cite{ringlein}, in that we have observed a positive relationship between molecular surface area and the force of static friction (linear increase of intercepts in \figref{forceload}). This relationship appears to be linear based on the three linear increase of surface area in the three simulations.  This confirms the implied intuitin in the introduction that implies a model of static friction contrary to Amonton's Law (2).  We also observed a linear relationship between an applied normal force and the force of static friction (fit of points to line in \figref{forceload}). These results together suggest that a more appropriate model for the force of molecular static friction is
+%$$
+%  F_s = \mu_s W + c A,
+%$$ 
+%where $W$ is the applied normal force,  $A$ is the surface area of contact, and $\mu_s$ and $c$ are constants of proportionality.  In our simulation we predicted these vales to be $\hat \mu_s = 0.3767$ and $\hat c = 1.0$ by averaging predicted slopes and fitting a line through the intercepts of lines in \figref{forceload}.
+%
+%The next question is why $c = 0$ on a macroscopic scale, reconciling with
+%Amontons' original model of friction.  This question is addressed in
+%\cite{ringlein}, and they attribute the lack of area dependence to the fact
+%that macroscopic surfaces are quite ``rough'' and there is relatively sparse
+%area of actual contact between atoms.  This reconciles with intuition regarding
+%adhesion, in that adhesion becomes important when materials easily deform as in tape
+%or rubber \cite{ringlein}.  
+%
+%A future model for this situation might
+%be to model the contact surfaces in a probabilistic way so that local maxima
+%are randomly distributed on each contact surface.  Although our model codes
+%allows for three dimensional particle simulations, it does not scale well
+%beyond about 256 particles due to the distance calculation.  Future
+%optimization may make this simulation possible.
+%
+%
+
+\begin{thebibliography}{[1]}
+  \bibitem{cundle} Cundall, P. A. and Strack D. L. \emph{A discrete numerical model of granular assemblies}. G\'eotechnique 1979, No. 1, 47-65
+  \bibitem{bell} Bell, N., Yu Y. and Mucha, P. J. \emph{Particle-Based Simulation of Granular Materials}.  Eurographics/ACM SIGGRAPH Symposium on Computer Animation 2005.
+  \bibitem{scipy} Eric Jones and Travis Oliphant and Pearu Peterson and others, \emph{{SciPy}: Open source scientific tools for {Python}}, 2001--, \url{http://www.scipy.org/}.
+  \bibitem{matplotlib} Hunter, J.D. \emph{Matplotlib: A 2D Graphics Environment}, Computing in Science \& Engineering, Vol. 9, No. 3. (2007), pp. 90-95.
+\end{thebibliography}
+\end{document}
