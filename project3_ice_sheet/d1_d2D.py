@@ -33,7 +33,7 @@ dt = 0.3      # time step
 u = TrialFunction(V)
 v = TestFunction(V)
 f = Constant(beta - 2 - 2*alpha)
-a = u*v*dx + dt*inner(nabla_grad(u), nabla_grad(v))*dx
+a = u*v*dx + dt*dot(nabla_grad(u), nabla_grad(v))*dx
 L = (u_1 + dt*f)*v*dx
 
 A = assemble(a)   # assemble only once, before the time stepping
@@ -53,7 +53,7 @@ while t <= T:
     # Verify
     u_e = interpolate(u0, V)
     maxdiff = numpy.abs(u_e.vector().array() - u.vector().array()).max()
-    print 'Max error, t=%.2f: %-10.3f' % (t, maxdiff)
+    print 'Max error, t={}: {}'.format(t, maxdiff)
 
     t += dt
     u_1.assign(u)
