@@ -31,12 +31,6 @@ def surface_temp(t):
   return -10 + 5*np.sin(2*pi*t/spy)
 
 # Expressions
-#sigma = lambda z: (z-zb)/(zs-zb)
-#dsigma_dz = (zs-zb)**(-1)
-#u = lambda z: 20-100*sigma(z)**4
-#du_dz = lambda z: -400.*sigma(z)*dsigma_dz
-#w = lambda z: v_ice*sigma(z)**4
-# phi = lambda z: -rho*g*(zs - z)*du_dz(z)*slope
 sigma_exp = '(x[0] - zb)/(zs - zb)'
 sigma = Expression(sigma_exp,zb=zb,zs=zs)
 u = Expression('20-100*pow('+sigma_exp+',4)',zb=zb,zs=zs)
@@ -67,6 +61,7 @@ def DirichletBoundary(x, on_boundary):
   return on_boundary and (abs(x[0]-zs) < tol)
 
 theta0 = Expression('-10 + 5*sin(2*pi*t/spy)',t=0,spy=spy)
+#theta0 = Expression('T0',T0=surface_temp(t),t=t)
 bc = DirichletBC(Q, theta0, DirichletBoundary)
 
 A = assemble(a)

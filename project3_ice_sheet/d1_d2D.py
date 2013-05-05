@@ -29,6 +29,8 @@ u_1 = interpolate(u0, V)
 
 dt = 0.3      # time step
 
+plot(u_1)
+
 # Define variational problem
 u = TrialFunction(V)
 v = TestFunction(V)
@@ -58,3 +60,5 @@ while t <= T:
     t += dt
     u_1.assign(u)
 
+plot(u_1)
+interactive()
