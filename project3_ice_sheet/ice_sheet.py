@@ -7,14 +7,14 @@ import pylab as py
 
 spy = 31556926.
 # Parameters with meaningful change 
-zb = -50.
+zb = -100.
 v_ice_rate = 0
 slope = .1E-5
 dth_dx = 2E-4
-qgeo = 50000
+qgeo = 30E-3
 n_mesh = 20
-total_time = 50*spy
-dt = .1*spy
+total_time = 1000*spy
+dt = 10*spy
 
 # Constants 
 zs = 10.
@@ -36,7 +36,7 @@ sigma = Expression(sigma_exp,zb=zb,zs=zs)
 u = Expression('20-100*pow('+sigma_exp+',4)',zb=zb,zs=zs)
 w = Expression(('v_ice_rate*pow('+sigma_exp+',4)',),zb=zb,zs=zs,v_ice_rate=v_ice_rate)
 phi = Expression('rho*g*(zs - x[0])*400*pow('+sigma_exp+',3)/(zs-zb)*slope',zb=zb,zs=zs,rho=rho,g=g,slope=slope)
-boundary = Expression('1-'+sigma_exp,zs=zs,zb=zb)
+bed_boundary = Expression('1-'+sigma_exp,zs=zs,zb=zb)
 
 # Load Interval mesh
 mesh = IntervalMesh(n_mesh,zb,zs) 
@@ -51,9 +51,8 @@ theta, v = TrialFunction(Q), TestFunction(Q)
 theta_last = interpolate(Expression("T0",T0=surface_temp(0)),Q)
 
 # Variational Problem
-a = (theta*v + dt*k/rho/cp*spy*dot(nabla_grad(theta),nabla_grad(v)))*dx # + spy*dt*dot(w,nabla_grad(theta))*v)*dx
+a = (theta*v + dt*k/rho/cp*dot(nabla_grad(theta),nabla_grad(v)))*dx 
 #a = (theta*v + dt*k/rho/cp*spy*dot(nabla_grad(theta),nabla_grad(v)) + spy*dt*dot(w,nabla_grad(theta))*v)*dx
-L = (theta_last*v)*dx + (boundary*qgeo*v*dt/rho/cp)*ds
 #L = (theta_last*v - dt*u*dth_dx*v + phi*v/rho/cp*dt)*dx + (qgeo*v*dt/rho/cp)*ds
 #L = (theta_last*v - dt*u*dth_dx*v + phi*v/rho/cp*dt)*dx + (qgeo*v*dt/rho/cp)*ds
 
@@ -74,18 +73,20 @@ theta = Function(Q)
 t = dt
 py.ion()
 ax, = py.plot(theta_last.vector().array(),mesh.coordinates(),'k.')
+py.xlim(-10,-7)
 while t <= total_time:
-  print "t : {}".format(t/spy)
   t_surface.assign( surface_temp(t) )
-  b = assemble(L)
+  L = (theta_last*v)*dx + (bed_boundary*dt/rho/cp*qgeo*v)*ds
+  b = assemble(L, tensor=b)
   bc.apply(A, b)
-#  from IPython.core.debugger import Tracer
-#  debug_here = Tracer()
-#  debug_here()
   solve(A,theta.vector(), b)
   t += dt
   theta_last = theta
-  ax.set_xdata(theta.vector().array())
+#  from IPython.core.debugger import Tracer
+#  debug_here = Tracer()
+#  debug_here()
+  py.title(t/spy)
+  ax.set_xdata(theta_last.vector().array())
   py.draw()
 
 

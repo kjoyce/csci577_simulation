@@ -60,7 +60,7 @@ Collecting terms involving the solution on the left-hand side, and applying inte
     \right\} \, dz
   =& 
   \int_\Omega\left\{\theta_{k-1} - u\frac{\partial \theta_k}{\partial x} - \frac{\phi}{\rho C_p} \right\}\cdot v\, dz \\  
-  & &\dots  + \int_{\partial \Omega} \left\{ \frac{\partial \theta_k}{\partial z} v \right\}\, ds.\\
+  & &\dots  + \Delta t \frac{k}{\rho C_p}\int_{\partial \Omega} \left\{ \frac{\partial \theta_k}{\partial z} v \right\}\, ds.\\
 %  \int_\Omega \left\{\theta_k + \Delta t w(z) \frac{\partial \theta}{\partial z} \right\} v\, dz - \Delta t \frac{k}{\rho C_p} \int_\Omega \left\{\frac{\partial^2 \theta}{\partial z^2}\right\} v\, dz= \int_\Omega\left\{- u(z)\frac{\partial \theta}{\partial x} - \frac{\phi(z)}{\rho C_p} \right\}\cdot v\, dz \\  
 %  \int_\Omega \left\{\frac{\theta_k - \theta_{k-1}}{ \Delta t} \right. &+ \left.u(z)\frac{\partial \theta}{\partial x} + w(z) \frac{\partial \theta}{\partial z} + \frac{\phi(z)}{\rho C_p} \right\}v\,dz =  \frac{k}{\rho C_p} \int_\Omega \left\{\frac{\partial^2 \theta}{\partial z^2}\right\}v\, dz \\
 %  \dots &=p \frac{k}{\rho C_p} \left[ \int_{\partial\Omega} \frac{\partial \theta}{\partial z} v ds - \int_\Omega \frac{\partial\theta}{\partial z}\frac{\partial v}{\partial z} dz  \right]\\
