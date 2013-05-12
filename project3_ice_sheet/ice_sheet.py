@@ -23,16 +23,16 @@ zb = -2500. # Use this for realistic depth
 #zb = -500. # Use this for seasonal variation firn
 w_ice_rate = -.1
 #w_ice_rate = 0 # Use this to turn off vertical advection
-u_ice_rate = 60
+u_ice_rate = 30
 #u_ice_rate = 0  # Use this to turn off horizontal advection
 slope = .4E-5
 #slope = 0  # Use this to turn off compression
 dth_dx = 2E-5
 qgeo = 60E-3
 n_mesh = 40
-total_time = 60000*spy  # This should be long enough for two steady states
+#total_time = 60000*spy  # This should be long enough for two steady states
 #total_time = 40*spy  #Use this for firn
-#total_time = 30000*spy  # Use this for one steady state
+total_time = 30000*spy  # Use this for one steady state
 steady_state_tol = .0005
 dt = 30*spy # Use this for steady state
 #dt = .1*spy  # Use this for firn
@@ -44,10 +44,9 @@ rho = 600. # Use this for firn
 rho = 911. # Use this for ice density
 cp = 2009.
 beta = 9.8E-8
-theta_pmp = -beta*rho*g*(zs - zb)
-#theta_pmp = -5.
+theta_pmp = lambda z: -beta*rho*g*(zs - z)
 k = 2.1
-xlim = (-11,0)
+xlim = (-13,0)
 
 # Surface temperature
 def surface_temp(t):
@@ -73,16 +72,16 @@ theta, v = TrialFunction(Q), TestFunction(Q)
 # Define last solution based on surface temperature
 theta_last = interpolate(Expression("T0",T0=surface_temp(0)),Q)
 # Here is a bad hack that lets you start from a steady state
-# theta_last.vector().set_local(np.array([ -2.19830112,  -2.38190745,  -2.85087139,  -3.31520368,
-#         -3.77270304,  -4.22126711,  -4.65892097,  -5.08384266,
-#         -5.49438491,  -5.88909273,  -6.26671665,  -6.6262213 ,
-#         -6.96678945,  -7.28782149,  -7.58893078,  -7.869935  ,
-#         -8.13084404,  -8.37184503,  -8.59328491,  -8.79565119,
-#         -8.97955159,  -9.14569294,  -9.29486011,  -9.4278953 ,
-#         -9.54567823,  -9.64910755,  -9.73908383,  -9.81649425,
-#         -9.88219932,  -9.93702146,  -9.98173575, -10.0170625 ,
-#        -10.04366187, -10.06213004, -10.0729972 , -10.07672676,
-#        -10.07371589, -10.06429702, -10.04874025, -10.02725631, -10.        ]))
+# theta_last.vector().set_local(array([ -2.19830112,  -2.48580721,  -3.03946921,  -3.58733924,
+#        -4.12669701,  -4.65496409,  -5.16974199,  -5.66884429,
+#        -6.1503219 ,  -6.61248099,  -7.0538933 ,  -7.47339887,
+#        -7.87010168,  -8.24335848,  -8.592762  ,  -8.91811907,
+#        -9.21942509,  -9.49683567,  -9.75063667,  -9.98121377,
+#       -10.18902233, -10.37455858, -10.53833277, -10.6808447 ,
+#       -10.80256222, -10.90390268, -10.98521761, -11.04678034,
+#       -11.08877663, -11.11129785, -11.11433659, -11.0977842 ,
+#       -11.06143005, -11.00496212, -10.92796855, -10.82994002,
+#       -10.71027256, -10.56827068, -10.40315066, -10.21404386, -10.        ]))
 # 
 # Variational Problem
 #a = (theta*v + dt*k/rho/cp*dot(nabla_grad(theta),nabla_grad(v)))*dx 
@@ -138,7 +137,9 @@ while t <= total_time: # Use this for fixed time looping
 #### Numpy calculations ####
   np_theta = theta_last.vector().array()
   # Check Bed Melting #
-  np_theta[np_theta>theta_pmp] = theta_pmp
+  z = mesh.coordinates()[:,0]
+  idx = np_theta>theta_pmp(z)
+  np_theta[idx] = theta_pmp(z)[idx]
   theta_last.vector().set_local(np_theta)
 
   # Check steady state by comparing every tenth temperature vector
@@ -158,7 +159,7 @@ while t <= total_time: # Use this for fixed time looping
     temp_contours[i,:] = np_theta
     i += 1
     
-  py.title("Time: {}, Max temp: {:.3f}, Min Temp: {:.4f} PMP: {:.3f}".format(t/spy, max(np_theta), min(np_theta), theta_pmp))
+  py.title("Time: {}, Max temp: {:.3f}, Min Temp: {:.4f} PMP: {:.3f}".format(t/spy, max(np_theta), min(np_theta), theta_pmp(zb)))
   ax.set_xdata(np_theta)
   py.draw()
 
