@@ -79,3 +79,6 @@ nosetests.xml
 
 # pickle dumps
 *.dump
+
+# writeups
+write_up.*
